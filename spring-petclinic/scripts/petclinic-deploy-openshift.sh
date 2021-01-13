@@ -51,6 +51,18 @@ do
 			memlim=*)
 				MEM_LIM=${OPTARG#*=}
 				;;
+			maxinlinelevel=*)
+				MaxInlineLevel=${OPTARG#*=}
+				;;
+			compilethreshold=*)
+				CompileThreshold=${OPTARG#*=}
+				;;
+			maxinlinesize=*)
+				MaxInlineSize=${OPTARG#*=}
+                                ;;
+			cicompilercount=*)
+				CICompilerCount=${OPTARG#*=}
+                                ;;
 			*)
 		esac
 		;;
@@ -125,6 +137,21 @@ function createInstances() {
 		if [ ! -z  ${CPU_LIM} ]; then
 			sed -i '/limits:/a \ \ \ \ \ \ \ \ \ \ cpu: '${CPU_LIM}'' ${MANIFESTS_DIR}/petclinic-${inst}.yaml
 		fi
+		if [ ! -z  ${MaxInlineLevel} ]; then
+                        sed -i 's/test_jvm_args/-XX:MaxInlineLevel='${MaxInlineLevel}'/g' ${MANIFESTS_DIR}/petclinic-${inst}.yaml
+                fi	
+		if [ ! -z  ${CompileThreshold} ]; then
+                        sed -i 's/test_jvm_args/-XX:CompileThreshold='${CompileThreshold}'/g' ${MANIFESTS_DIR}/petclinic-${inst}.yaml
+                fi
+		if [ ! -z  ${MaxInlineSize} ]; then
+                        sed -i 's/test_jvm_args/-XX:MaxInlineSize='${MaxInlineSize}'/g' ${MANIFESTS_DIR}/petclinic-${inst}.yaml
+                fi
+		if [ ! -z  ${CICompilerCount} ]; then
+                        sed -i 's/test_jvm_args/-XX:CICompilerCount='${CICompilerCount}'/g' ${MANIFESTS_DIR}/petclinic-${inst}.yaml
+                fi
+
+		# if no JVM args, then replace test_jvm_args empty.
+#		sed -i 's/test_jvm_args/ /g' ${MANIFESTS_DIR}/petclinic-${inst}.yaml
 		
 		oc create -f ${MANIFESTS_DIR}/petclinic-${inst}.yaml -n ${NAMESPACE}
 		err_exit "Error: Issue in deploying."
