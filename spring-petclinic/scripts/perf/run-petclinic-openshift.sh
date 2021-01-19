@@ -80,6 +80,10 @@ do
 			cicompilercount=*)
 				CICompilerCount=${OPTARG#*=}
                                 ;;
+			maxheapfreeratio=*)
+				MaxHeapFreeRatio=${OPTARG#*=}
+                                ;;
+
 			*)
 		esac
 		;;
@@ -196,6 +200,18 @@ function run_jmeter_workload() {
 	${cmd} > ${RESULTS_LOG}
 }
 
+function run_jmeter_workload_with_single_client() {
+        # Store results in this file
+        IP_ADDR=$1
+        RESULTS_LOG=$2
+        # Run the jmeter load
+        echo "Running jmeter load with the following parameters" >> setup.log
+        cmd="docker run  --rm -e JHOST=${IP_ADDR} -e JDURATION=60 -e JUSERS=1 kruize/jmeter_petclinic:noport"
+        echo "CMD = ${cmd}" >> setup.log
+        ${cmd} > ${RESULTS_LOG}
+	sleep 60
+}
+
 # Run the jmeter load on each instace of the application
 # input: Result directory, Type of run(warmup|measure), iteration number
 # output: call the run_jmeter_workload for each application service
@@ -208,6 +224,10 @@ function run_jmeter_with_scaling()
 	for svc_api  in "${svc_apis[@]}"
 	do
 		RESULT_LOG=${RESULTS_DIR_J}/jmeter-${svc_api}-${TYPE}-${RUN}.log
+		if [ ${TYPE} ==  "warmup" ]  && [ ${RUN} ==  "0" ]; then
+			RESULT_LOG_1client=${RESULTS_DIR_J}/jmeter-${svc_api}-${TYPE}-${RUN}-1client.log
+			run_jmeter_workload ${svc_api} ${RESULT_LOG_1client} &
+		fi
 		run_jmeter_workload ${svc_api} ${RESULT_LOG} &
 	done
 }
@@ -239,7 +259,7 @@ function parseData() {
 			wer_sum=`expr ${wer_sum} + ${weberrors}`
 		done
 		echo "${run},${thrp_sum},${resp_sum},${wer_sum}" >> ${RESULTS_DIR_J}/Throughput-${TYPE}-${itr}.log
-		echo "${run} , ${CPU_REQ} , ${MEM_REQ} , ${thrp_sum} , ${responsetime} , ${wer_sum} , ${MaxInlineLevel}, ${CompileThreshold} " >> ${RESULTS_DIR_J}/Throughput-${TYPE}-raw.log
+		echo "${run} , ${TYPE}-${ITR}-${run}, ${CPU_REQ} , ${MEM_REQ} , ${thrp_sum} , ${responsetime} , ${wer_sum} , ${MaxInlineLevel}, ${CompileThreshold} " >> ${RESULTS_DIR_J}/Throughput-${TYPE}-raw.log
 	done
 }
 
@@ -395,8 +415,14 @@ function parseResults() {
 		
 		###### Add different raw logs we want to merge
 		#Cumulative raw data
-		paste ${RESULTS_DIR_J}/Throughput-measure-raw.log ${RESULTS_DIR_J}/cpu-measure-raw.log ${RESULTS_DIR_J}/mem-measure-raw.log >>  ${RESULTS_DIR_J}/../Metrics-raw.log
+#		paste ${RESULTS_DIR_J}/Throughput-warmup-raw.log ${RESULTS_DIR_J}/cpu-warmup-raw.log ${RESULTS_DIR_J}/mem-warmup-raw.log >>  ${RESULTS_DIR_J}/../Metrics-raw.log
+#		paste ${RESULTS_DIR_J}/Throughput-measure-raw.log ${RESULTS_DIR_J}/cpu-measure-raw.log ${RESULTS_DIR_J}/mem-measure-raw.log >>  ${RESULTS_DIR_J}/../Metrics-raw.log
 	done
+	
+	###### Add different raw logs we want to merge
+        #Cumulative raw data
+        paste ${RESULTS_DIR_J}/Throughput-warmup-raw.log ${RESULTS_DIR_J}/cpu-warmup-raw.log ${RESULTS_DIR_J}/mem-warmup-raw.log >>  ${RESULTS_DIR_J}/../Metrics-raw.log
+        paste ${RESULTS_DIR_J}/Throughput-measure-raw.log ${RESULTS_DIR_J}/cpu-measure-raw.log ${RESULTS_DIR_J}/mem-measure-raw.log >>  ${RESULTS_DIR_J}/../Metrics-raw.log
 
 	for metric in "${total_logs[@]}"
 	do
@@ -416,7 +442,7 @@ function parseResults() {
 		
 	done
 
-	echo "${sca} ,  ${total_throughput_avg} , ${total_responsetime_avg} , ${total_mem_avg} , ${total_cpu_avg} , ${total_cpu_min} , ${total_cpu_max} , ${total_mem_min} , ${total_mem_max} , ${total_c_mem_avg} , ${total_c_cpu_avg} , ${CPU_REQ} , ${MEM_REQ} , ${total_weberror_avg} , ${MaxInlineLevel}, ${CompileThreshold} , ${MaxInlineSize} , ${CICompilerCount} , ${ci_throughput} , ${ci_responsetime} ,  ${ci_mem} , ${ci_cpu} " >> ${RESULTS_DIR_J}/../Metrics.log
+	echo "${sca} ,  ${total_throughput_avg} , ${total_responsetime_avg} , ${total_mem_avg} , ${total_cpu_avg} , ${total_cpu_min} , ${total_cpu_max} , ${total_mem_min} , ${total_mem_max} , ${total_c_mem_avg} , ${total_c_cpu_avg} , ${CPU_REQ} , ${MEM_REQ} , ${total_weberror_avg} , ${MaxInlineLevel}, ${CompileThreshold} , ${MaxInlineSize} , ${CICompilerCount} , ${MaxHeapFreeRatio} , ${ci_throughput} , ${ci_responsetime} ,  ${ci_mem} , ${ci_cpu} " >> ${RESULTS_DIR_J}/../Metrics.log
 	echo "${sca} ,  ${total_mem_avg} , ${total_memusage_avg} , ${total_memrequests_avg} , ${total_memlimits_avg} , ${total_memreq_in_p_avg} , ${total_memlimit_in_p_avg} " >> ${RESULTS_DIR_J}/../Metrics-mem.log
 	echo "${sca} ,  ${total_cpu_avg} , ${total_cpurequests_avg} , ${total_cpulimits_avg} , ${total_cpureq_in_p_avg} , ${total_cpulimits_in_p_avg} " >> ${RESULTS_DIR_J}/../Metrics-cpu.log
 	echo "${sca} , ${total_c_cpu_avg} , ${total_c_cpurequests_avg} , ${total_c_cpulimits_avg} , ${total_c_mem_avg} , ${total_c_memrequests_avg} , ${total_c_memlimits_avg} " >> ${RESULTS_DIR_J}/../Metrics-cluster.log
@@ -539,7 +565,7 @@ function runIterations() {
 	for (( itr=0; itr<${TOTAL_ITR}; itr++ ))
 	do
 		if [ $RE_DEPLOY == "true" ]; then
-			${SCRIPT_REPO}/petclinic-deploy-openshift.sh -s ${BENCHMARK_SERVER} -i ${SCALING} -p ${PETCLINIC_IMAGE} --cpureq=${CPU_REQ} --memreq=${MEM_REQ} --cpulim=${CPU_LIM} --memlim=${MEM_LIM} --maxinlinelevel=${MaxInlineLevel} --compilethreshold=${CompileThreshold} --maxinlinesize=${MaxInlineSize} --cicompilercount=${CICompilerCount} >> setup.log
+			${SCRIPT_REPO}/petclinic-deploy-openshift.sh -s ${BENCHMARK_SERVER} -i ${SCALING} -p ${PETCLINIC_IMAGE} --cpureq=${CPU_REQ} --memreq=${MEM_REQ} --cpulim=${CPU_LIM} --memlim=${MEM_LIM} --maxinlinelevel=${MaxInlineLevel} --compilethreshold=${CompileThreshold} --maxinlinesize=${MaxInlineSize} --cicompilercount=${CICompilerCount} --maxheapfreeratio=${MaxHeapFreeRatio} >> setup.log
 		fi
 		# Start the load
 		RESULTS_DIR_I=${RESULTS_DIR_ITR}/ITR-${itr}

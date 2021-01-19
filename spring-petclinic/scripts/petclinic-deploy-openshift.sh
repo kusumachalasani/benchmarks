@@ -63,6 +63,10 @@ do
 			cicompilercount=*)
 				CICompilerCount=${OPTARG#*=}
                                 ;;
+			maxheapfreeratio=*)
+				MaxHeapFreeRatio=${OPTARG#*=}
+                                ;;
+
 			*)
 		esac
 		;;
@@ -148,6 +152,9 @@ function createInstances() {
                 fi
 		if [ ! -z  ${CICompilerCount} ]; then
                         sed -i 's/test_jvm_args/-XX:CICompilerCount='${CICompilerCount}'/g' ${MANIFESTS_DIR}/petclinic-${inst}.yaml
+                fi
+		if [ ! -z  ${MaxHeapFreeRatio} ]; then
+                        sed -i 's/test_jvm_args/-XX:MaxHeapFreeRatio='${MaxHeapFreeRatio}'/g' ${MANIFESTS_DIR}/petclinic-${inst}.yaml
                 fi
 
 		# if no JVM args, then replace test_jvm_args empty.
