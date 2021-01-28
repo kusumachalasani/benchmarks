@@ -533,7 +533,7 @@ function runItr()
 		run_jmeter_with_scaling ${RESULTS_runItr} ${TYPE} ${run}
 		# Sleep till the jmeter load completes
 		sleep ${JMETER_LOAD_DURATION}
-		sleep 40
+		sleep 10
 	done
 }
 
@@ -575,7 +575,7 @@ function runIterations() {
 		echo "Running ${MEASURES} measures for ${USERS} users" >> setup.log
 		# Perform measure runs
 		runItr measure ${MEASURES} ${RESULTS_DIR_I}
-		sleep 60
+		sleep 20
 		# get the kruize recommendation for petclinic application
 		# commenting for now as it is not required in all cases
 		#get_recommendations_from_kruize ${RESULTS_DIR_I}

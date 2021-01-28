@@ -167,7 +167,7 @@ function createInstances() {
 	done
 
 	#Wait till petclinic starts
-	sleep 40
+	sleep 80
 
 	#Expose the services
 	svc_list=($(oc get svc --namespace=${NAMESPACE} | grep "service" | grep "petclinic" | cut -d " " -f1))
@@ -177,7 +177,7 @@ function createInstances() {
 		err_exit " Error: Issue in exposing service"
 	done
 	
-	sleep 120
+	#sleep 120
 	# Check if the application is running
 	check_app
 }
