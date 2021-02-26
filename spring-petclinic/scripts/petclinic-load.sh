@@ -24,7 +24,7 @@ source ${CURRENT_DIR}/petclinic-common.sh
 
 function usage() {
 	echo
-	echo "Usage: -c CLUSTER_TYPE[docker|minikube|openshift] [-i SERVER_INSTANCES] [--iter=MAX_LOOP] [-n NAMESPACE] [-a IP_ADDR]"
+	echo "Usage: -c CLUSTER_TYPE[docker|minikube|openshift] [-i SERVER_INSTANCES] [--iter=MAX_LOOP] [-n NAMESPACE] [-a IP_ADDR] [-p PORT] [--image=JMETER_FOR_LOAD]"
 	exit -1
 }
 
@@ -35,6 +35,9 @@ do
 		case "${OPTARG}" in
 			iter=*)
 				MAX_LOOP=${OPTARG#*=}
+				;;
+			image=*)
+				JMETER_FOR_LOAD=${OPTARG#*=}
 				;;
 		esac
 		;;
@@ -49,6 +52,9 @@ do
 		;;
 	n)
 		NAMESPACE="${OPTARG}"		
+		;;
+	p)
+		PETCLINIC_PORT="${OPTARG}"
 		;;
 	esac
 done
@@ -74,10 +80,12 @@ docker)
 	if [ -z "${IP_ADDR}" ]; then
 		get_ip
 	fi
-	if [[ "$(docker images -q ${JMETER_CUSTOM_IMAGE} 2> /dev/null)" != "" ]]; then
-		JMETER_FOR_LOAD="${JMETER_CUSTOM_IMAGE}" 
-	else
-		JMETER_FOR_LOAD=${JMETER_DEFAULT_IMAGE}
+	if [-z "${JMETER_FOR_LOAD}" ]; then
+		if [[ "$(docker images -q ${JMETER_CUSTOM_IMAGE} 2> /dev/null)" != "" ]]; then
+			JMETER_FOR_LOAD="${JMETER_CUSTOM_IMAGE}" 
+		else
+			JMETER_FOR_LOAD=${JMETER_DEFAULT_IMAGE}
+		fi
 	fi
 	err_exit "Error: Unable to load the jmeter image"
 	
@@ -86,17 +94,21 @@ icp|minikube)
 	if [ -z "${IP_ADDR}" ]; then
 		IP_ADDR=$(minikube ip)
 	fi
-	if [[ "$(docker images -q ${JMETER_CUSTOM_IMAGE} 2> /dev/null)" == "" ]]; then
-		JMETER_FOR_LOAD=${JMETER_DEFAULT_IMAGE}
-	else
-		JMETER_FOR_LOAD="${JMETER_CUSTOM_IMAGE}"
+	if [-z "${JMETER_FOR_LOAD}" ]; then
+		if [[ "$(docker images -q ${JMETER_CUSTOM_IMAGE} 2> /dev/null)" == "" ]]; then
+			JMETER_FOR_LOAD=${JMETER_DEFAULT_IMAGE}
+		else
+			JMETER_FOR_LOAD="${JMETER_CUSTOM_IMAGE}"
+		fi
 	fi
 	;;
 openshift)
 	if [ -z "${IP_ADDR}" ]; then
 		IP_ADDR=($(oc status --namespace=${NAMESPACE} | grep "petclinic" | grep port | cut -d " " -f1 | cut -d "/" -f3))
 	fi
-	JMETER_FOR_LOAD="kruize/jmeter_petclinic:noport"
+	if [-z "${JMETER_FOR_LOAD}" ]; then
+		JMETER_FOR_LOAD="kruize/jmeter_petclinic:noport"
+	fi
 	;;
 *)
 	echo "Load is not determined"
