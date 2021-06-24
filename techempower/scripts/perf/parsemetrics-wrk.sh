@@ -50,29 +50,29 @@ function parseData() {
 			isms_max_responsetime=`cat ${RESULT_LOG} | grep "Latency:" | cut -d ":" -f2 | tr -s " " | cut -d " " -f7 `
 			isms_stddev_responsetime=`cat ${RESULT_LOG} | grep "Latency:" | cut -d ":" -f2 | tr -s " " | cut -d " " -f5 `
 			if [ "${isms_responsetime}" == "s" ]; then
-				responsetime=$(echo ${responsetime}*1000 | bc)
-			elif [ "${isms_responsetime}" == "μs" ]; then
-                                responsetime=$(echo ${responsetime}/1000 | bc)
+				responsetime=$(echo ${responsetime}*1000 | bc -l)
+			elif [ "${isms_responsetime}" == "Î¼s" ]; then
+                                responsetime=$(echo ${responsetime}/1000 | bc -l)
 			fi
 
 			if [ "${isms_max_responsetime}" == "s" ]; then
-				max_responsetime=$(echo ${max_responsetime}*1000 | bc)
-			elif [ "${isms_max_responsetime}" == "μs" ]; then
-                                max_responsetime=$(echo ${max_responsetime}/1000 | bc)
+				max_responsetime=$(echo ${max_responsetime}*1000 | bc -l)
+			elif [ "${isms_max_responsetime}" == "Î¼s" ]; then
+                                max_responsetime=$(echo ${max_responsetime}/1000 | bc -l)
 			fi
 
 			if [ "${isms_stddev_responsetime}" == "s" ]; then
-				stddev_responsetime=$(echo ${stddev_responsetime}*1000 | bc)
-			elif [ "${isms_stddev_responsetime}" == "μs" ]; then
-                                stddev_responsetime=$(echo ${stddev_responsetime}/1000 | bc)
+				stddev_responsetime=$(echo ${stddev_responsetime}*1000 | bc -l)
+			elif [ "${isms_stddev_responsetime}" == "Î¼s" ]; then
+                                stddev_responsetime=$(echo ${stddev_responsetime}/1000 | bc -l)
                         fi
 			
 			weberrors=`cat ${RESULT_LOG} | grep "Non-2xx" | cut -d ":" -f2`
 			if [ ! -z ${throughput} ]; then
-				thrp_sum=$(echo ${thrp_sum}+${throughput} | bc)
+				thrp_sum=$(echo ${thrp_sum}+${throughput} | bc -l)
 			fi
 			if [ ! -z ${responsetime} ]; then
-				resp_sum=$(echo ${resp_sum}+${responsetime} | bc)
+				resp_sum=$(echo ${resp_sum}+${responsetime} | bc -l)
 			fi
 			if [ "${weberrors}" != "" ]; then
 				wer_sum=`expr ${wer_sum} + ${weberrors}`
