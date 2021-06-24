@@ -51,19 +51,19 @@ function parseData() {
 			isms_stddev_responsetime=`cat ${RESULT_LOG} | grep "Latency:" | cut -d ":" -f2 | tr -s " " | cut -d " " -f5 `
 			if [ "${isms_responsetime}" == "s" ]; then
 				responsetime=$(echo ${responsetime}*1000 | bc -l)
-			elif [ "${isms_responsetime}" == "Î¼s" ]; then
+			elif [ "${isms_responsetime}" != "ms" ]; then
                                 responsetime=$(echo ${responsetime}/1000 | bc -l)
 			fi
 
 			if [ "${isms_max_responsetime}" == "s" ]; then
 				max_responsetime=$(echo ${max_responsetime}*1000 | bc -l)
-			elif [ "${isms_max_responsetime}" == "Î¼s" ]; then
+			elif [ "${isms_max_responsetime}" != "ms" ]; then
                                 max_responsetime=$(echo ${max_responsetime}/1000 | bc -l)
 			fi
 
 			if [ "${isms_stddev_responsetime}" == "s" ]; then
 				stddev_responsetime=$(echo ${stddev_responsetime}*1000 | bc -l)
-			elif [ "${isms_stddev_responsetime}" == "Î¼s" ]; then
+			elif [ "${isms_stddev_responsetime}" != "ms" ]; then
                                 stddev_responsetime=$(echo ${stddev_responsetime}/1000 | bc -l)
                         fi
 			
