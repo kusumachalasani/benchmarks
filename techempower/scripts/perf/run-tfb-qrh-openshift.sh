@@ -36,6 +36,8 @@ function err_exit() {
 		printf "$*"
 		echo
 		echo "The run failed. See setup.log for more details"
+		oc get pods -n ${NAMESPACE} >> ${LOGFILE}
+		oc get events -n ${NAMESPACE} >> ${LOGFILE}
 		echo "1 , 99999 , 99999 , 99999 , 99999 , 99999 , 999999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999" >> ${RESULTS_DIR_ROOT}/Metrics-prom.log
 		echo ", 99999 , 99999 , 99999 , 99999 , 9999 , 0 , 0" >> ${RESULTS_DIR_ROOT}/Metrics-wrk.log
 		paste ${RESULTS_DIR_ROOT}/Metrics-prom.log ${RESULTS_DIR_ROOT}/Metrics-wrk.log ${RESULTS_DIR_ROOT}/Metrics-config.log
@@ -228,6 +230,7 @@ function check_app() {
 		if [ -z "${status}" ]; then
                 	echo "Application pod did not come up" >> ${LOGFILE}
 			oc get pods -n ${NAMESPACE} >> ${LOGFILE}
+			oc get events -n ${NAMESPACE} >> ${LOGFILE}
 			echo "The run failed. See setup.log for more details"
 			echo "1 , 99999 , 99999 , 99999 , 99999 , 99999 , 999999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999" >> ${RESULTS_DIR_ROOT}/Metrics-prom.log
 			echo ", 99999 , 99999 , 99999 , 99999 , 9999 , 0 , 0" >> ${RESULTS_DIR_ROOT}/Metrics-wrk.log
