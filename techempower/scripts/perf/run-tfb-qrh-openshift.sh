@@ -340,7 +340,7 @@ function runIterations() {
 			# err_exit "Error: tfb-qrh deployment failed" >> ${LOGFILE}
 		fi
 		# Add extra sleep time for the deployment to complete as few machines takes longer time.
-		sleep 120
+		sleep 300
 		# Start the load
 		RESULTS_DIR_I=${RESULTS_DIR_R}/ITR-${itr}
 		echo "Running ${WARMUPS} warmups" >> ${LOGFILE}
