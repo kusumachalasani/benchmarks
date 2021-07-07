@@ -181,6 +181,9 @@ function createInstances() {
 		if [ ! -z  ${maxinlinelevel} ] && [ ! -z  ${quarkustpcorethreads} ] && [ ! -z  ${quarkustpqueuesize} ] && [ ! -z  ${quarkusdatasourcejdbcminsize} ] && [ ! -z  ${quarkusdatasourcejdbcmaxsize} ]; then
 			sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ \ \ value: "-server -XX:MaxInlineLevel='${maxinlinelevel}' -Dquarkus.thread-pool.core-threads='${quarkustpcorethreads}' -Dquarkus.thread-pool.queue-size='${quarkustpqueuesize}' -Dquarkus.datasource.jdbc.min-size='${quarkusdatasourcejdbcminsize}' -Dquarkus.datasource.jdbc.max-size='${quarkusdatasourcejdbcmaxsize}'"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
 			sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ - name: "JAVA_OPTIONS"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
+		elif [ ! -z  ${quarkusdatasourcejdbcminsize} ] && [ ! -z  ${quarkusdatasourcejdbcmaxsize} ]; then
+                        sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ \ \ value: "-server -Dquarkus.datasource.jdbc.min-size='${quarkusdatasourcejdbcminsize}' -Dquarkus.datasource.jdbc.max-size='${quarkusdatasourcejdbcmaxsize}' -Dquarkus.datasource.jdbc.initial-size='${quarkusdatasourcejdbcmaxsize}'"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
+                        sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ - name: "JAVA_OPTIONS"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
 		else
 			sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ \ \ value: "-server"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
                         sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ - name: "JAVA_OPTIONS"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
