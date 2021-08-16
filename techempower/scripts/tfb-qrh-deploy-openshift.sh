@@ -94,6 +94,9 @@ do
 			quarkusdatasourcejdbcmaxsize=*)
 				quarkusdatasourcejdbcmaxsize=${OPTARG#*=}
 				;;
+			database=*)
+				DATABASE=${OPTARG#*=}
+				;;
 			*)
 		esac
 		;;
@@ -130,6 +133,10 @@ if [ -z "${NAMESPACE}" ]; then
 	NAMESPACE="${DEFAULT_NAMESPACE}"
 fi
 
+if [ -z "${DATABASE}" ]; then
+        DATABASE="${DEFAULT_DATABASE}"
+fi
+
 # check memory limit for unit
 if [ ! -z "${MEM_LIM}" ]; then
 	check_memory_unit ${MEM_LIM}
@@ -146,8 +153,10 @@ function createInstances() {
 	#Create the deployments and services
 
 	# Deploy one instance of DB
-	oc create -f ${MANIFESTS_DIR}/postgres.yaml -n ${NAMESPACE}
-	sleep 10
+	if [[ ${DATABASE} == "postgres" ]]; then
+		oc create -f ${MANIFESTS_DIR}/postgres.yaml -n ${NAMESPACE}
+		sleep 10
+	fi
 
 	for(( inst=0; inst<"${SERVER_INSTANCES}"; inst++ ))
 	do

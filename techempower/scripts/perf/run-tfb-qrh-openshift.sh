@@ -123,6 +123,9 @@ do
 			quarkusdatasourcejdbcmaxsize=*)
 				quarkusdatasourcejdbcmaxsize=${OPTARG#*=}
                                 ;;
+			database=*)
+				DATABASE=${OPTARG#*=}
+				;;
 
 			*)
 		esac
@@ -194,6 +197,10 @@ fi
 
 if [ -z "${NAMESPACE}" ]; then
 	NAMESPACE="default"
+fi
+
+if [ -z "${DATABASE}" ]; then
+        DATABASE="postgres"
 fi
 
 if [ -z "${REQUEST_RATE}" ]; then
@@ -336,7 +343,7 @@ function runIterations() {
 		echo "***************************************" >> ${LOGFILE}
 		if [ ${RE_DEPLOY} == "true" ]; then
 			echo "Deploying the application..." >> ${LOGFILE}
-			${SCRIPT_REPO}/tfb-qrh-deploy-openshift.sh -s ${BENCHMARK_SERVER} -n ${NAMESPACE} -i ${SCALING} -g ${TFB_IMAGE} --cpureq=${CPU_REQ} --memreq=${MEM_REQ} --cpulim=${CPU_LIM} --memlim=${MEM_LIM} --maxinlinelevel=${maxinlinelevel} --quarkustpcorethreads=${quarkustpcorethreads} --quarkustpqueuesize=${quarkustpqueuesize} --quarkusdatasourcejdbcminsize=${quarkusdatasourcejdbcminsize} --quarkusdatasourcejdbcmaxsize=${quarkusdatasourcejdbcmaxsize} >> ${LOGFILE}
+			${SCRIPT_REPO}/tfb-qrh-deploy-openshift.sh -s ${BENCHMARK_SERVER} -n ${NAMESPACE} -i ${SCALING} -g ${TFB_IMAGE} --database=${DATABASE} --cpureq=${CPU_REQ} --memreq=${MEM_REQ} --cpulim=${CPU_LIM} --memlim=${MEM_LIM} --maxinlinelevel=${maxinlinelevel} --quarkustpcorethreads=${quarkustpcorethreads} --quarkustpqueuesize=${quarkustpqueuesize} --quarkusdatasourcejdbcminsize=${quarkusdatasourcejdbcminsize} --quarkusdatasourcejdbcmaxsize=${quarkusdatasourcejdbcmaxsize} >> ${LOGFILE}
 			# err_exit "Error: tfb-qrh deployment failed" >> ${LOGFILE}
 		fi
 		# Add extra sleep time for the deployment to complete as few machines takes longer time.
