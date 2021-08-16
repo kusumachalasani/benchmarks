@@ -218,6 +218,15 @@ function createInstances() {
 
 	## extra sleep time
 	sleep 60
+
+	## Create DB if database is h2
+	if [[ ${DATABASE} == "h2" ]]; then
+		SVC_APIS=($(oc status --namespace=${NAMESPACE} | grep "tfb-qrh" | grep port | cut -d " " -f1 | cut -d "/" -f3))
+        	for svc_api  in "${SVC_APIS[@]}"
+		do
+			curl http://${svc_api}/createdata
+                done
+        fi
 	
 	# Check if the application is running
 	#check_app >> ${LOGFILE}
