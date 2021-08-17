@@ -234,6 +234,9 @@ function check_app() {
 	CMD=$(oc get pods --namespace=${NAMESPACE} | grep "tfb-qrh" | grep "Running" | cut -d " " -f1)
 	for status in "${CMD[@]}"
 	do
+		oc get pods -n ${NAMESPACE} >> ${LOGFILE}
+                oc get events -n ${NAMESPACE} >> ${LOGFILE}
+
 		if [ -z "${status}" ]; then
                 	echo "Application pod did not come up" >> ${LOGFILE}
 			oc get pods -n ${NAMESPACE} >> ${LOGFILE}
