@@ -234,6 +234,8 @@ function check_app() {
 	CMD=$(oc get pods --namespace=${NAMESPACE} | grep "tfb-qrh" | grep "Running" | cut -d " " -f1)
 	for status in "${CMD[@]}"
 	do
+		sleep 60
+
 		oc get pods -n ${NAMESPACE} >> ${LOGFILE}
                 oc get events -n ${NAMESPACE} >> ${LOGFILE}
 
