@@ -261,7 +261,7 @@ function run_wrk_workload() {
 	RESULTS_LOG=$2
 	# Run the wrk load
 	echo "Running wrk load with the following parameters" >> ${LOGFILE}
-	cmd="${HYPERFOIL_DIR}/wrk2.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s --rate=${REQUEST_RATE} http://${IP_ADDR}/db"
+	cmd="${HYPERFOIL_DIR}/wrk.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s http://${IP_ADDR}/db"
 	echo "CMD = ${cmd}" >> ${LOGFILE}
 	${cmd} > ${RESULTS_LOG}
 	sleep 3
