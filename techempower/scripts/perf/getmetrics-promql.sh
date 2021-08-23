@@ -277,7 +277,8 @@ function get_server_requests_sum()
 	do
 		# Processing curl output "timestamp value" using jq tool.
 		curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(http_server_requests_seconds_sum) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_sum-${ITER}.json
-		err_exit "Error: could not get server_requests_sum details of the pod" >>setup.log
+		# err_exit "Error: could not get server_requests_sum details of the pod" >>setup.log
+		curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(http_server_requests_seconds_sum) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]'" >> ${RESULTS_DIR}/server_requests_sum_all-${ITER}.json
 	done
 }
 
