@@ -221,6 +221,12 @@ CPU_MEM_DURATION=`expr ${DURATION} + 5`
 # Check if the dependencies required to apply the load is present 
 check_load_prereq 
 
+# Add any debug logs required
+function debug_logs() {
+	for i in 0 1; do
+		oc exec -n openshift-user-workload-monitoring prometheus-user-workload-${i} -c prometheus -- curl -s http://localhost:9090/api/v1/targets > ${RESULTS_DIR_ROOT}/targets.${i}.json
+	done
+}
 # Check if the application is running
 # output: Returns 1 if the application is running else returns 0
 function check_app() {
