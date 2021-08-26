@@ -391,6 +391,7 @@ do
 	echo "Run logs are placed at... " ${RESULTS_DIR_ROOT} >> ${LOGFILE}
 	echo "***************************************" >> ${LOGFILE}
 	echo "Running the benchmark with ${scale}  instances with ${TOTAL_ITR} iterations having ${WARMUPS} warmups and ${MEASURES} measurements" >> ${LOGFILE}
+	debug_logs
 	# Perform warmup and measure runs
 	runIterations ${scale} ${TOTAL_ITR} ${WARMUPS} ${MEASURES} ${RESULTS_SC}
 	echo "Parsing results for ${scale} instances" >> ${LOGFILE}
