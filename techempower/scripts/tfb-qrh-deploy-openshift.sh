@@ -146,8 +146,8 @@ function createInstances() {
 	#Create the deployments and services
 
 	# Deploy one instance of DB
-	oc create -f ${MANIFESTS_DIR}/postgres.yaml -n ${NAMESPACE}
-	sleep 10
+#	oc create -f ${MANIFESTS_DIR}/postgres.yaml -n ${NAMESPACE}
+#	sleep 10
 
 	for(( inst=0; inst<"${SERVER_INSTANCES}"; inst++ ))
 	do
@@ -187,8 +187,19 @@ function createInstances() {
 		else
 			sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ \ \ value: "-server"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
                         sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ - name: "JAVA_OPTIONS"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
-
 		fi
+		
+	### Update postgres informations - specific to MW hardware runs
+			sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ \ \ value: "jdbc:postgresql://mwperf-server02.perf.lab.eng.rdu2.redhat.com:5432/techempower?loggerLevel=OFF&disableColumnSanitiser=true&assumeMinServerVersion=12&sslmode=disable"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
+                        sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ - name: "QUARKUS_DATASOURCE_JDBC_URL"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
+
+			sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ \ \ value: "techempower"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
+                        sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ - name: "QUARKUS_DATASOURCE_USERNAME"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
+
+			sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ \ \ value: "techempower"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
+                        sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ - name: "QUARKUS_DATASOURCE_PASSWORD"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
+
+		
 		oc create -f ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml -n ${NAMESPACE}
 		#err_exit "Error: Issue in deploying tfb-qrh." >> ${LOGFILE}
 
