@@ -105,11 +105,11 @@ do
 			memlim=*)
 				MEM_LIM=${OPTARG#*=}
 				;;
+			usertunables=*)
+                                OPTIONS_VAR=${OPTARG#*=}
+                                ;;
 			connection=*)
 				CONNECTIONS=${OPTARG#*=}
-				;;
-			maxinlinelevel=*)
-				maxinlinelevel=${OPTARG#*=}
 				;;
 			quarkustpcorethreads=*)
 				quarkustpcorethreads=${OPTARG#*=}
@@ -123,7 +123,80 @@ do
 			quarkusdatasourcejdbcmaxsize=*)
 				quarkusdatasourcejdbcmaxsize=${OPTARG#*=}
                                 ;;
-
+			FreqInlineSize=*)
+                                FreqInlineSize=${OPTARG#*=}
+                                ;;
+                        MaxInlineLevel=*)
+                                MaxInlineLevel=${OPTARG#*=}
+                                ;;
+                        MinInliningThreshold=*)
+                                MinInliningThreshold=${OPTARG#*=}
+                                ;;
+                        CompileThreshold=*)
+                                CompileThreshold=${OPTARG#*=}
+                                ;;
+                        CompileThresholdScaling=*)
+                                CompileThresholdScaling=${OPTARG#*=}
+                                ;;
+                        InlineSmallCode=*)
+                                InlineSmallCode=${OPTARG#*=}
+                                ;;
+                        LoopUnrollLimit=*)
+                                LoopUnrollLimit=${OPTARG#*=}
+                                ;;
+                        LoopUnrollMin=*)
+                                LoopUnrollMin=${OPTARG#*=}
+                                ;;
+                        MinSurvivorRatio=*)
+                                MinSurvivorRatio=${OPTARG#*=}
+                                ;;
+                        NewRatio=*)
+                                NewRatio=${OPTARG#*=}
+                                ;;
+                        TieredStopAtLevel=*)
+                                TieredStopAtLevel=${OPTARG#*=}
+                                ;;
+                        ConcGCThreads=*)
+                                ConcGCThreads=${OPTARG#*=}
+                                ;;
+                        TieredCompilation=*)
+                                TieredCompilation=${OPTARG#*=}
+                                ;;
+                        AllowParallelDefineClass=*)
+                                AllowParallelDefineClass=${OPTARG#*=}
+                                ;;
+                        AllowVectorizeOnDemand=*)
+                                AllowVectorizeOnDemand=${OPTARG#*=}
+                        AlwaysCompileLoopMethods=*)
+                                AlwaysCompileLoopMethods=${OPTARG#*=}
+                                ;;
+                        AlwaysPreTouch=*)
+                                AlwaysPreTouch=${OPTARG#*=}
+                                ;;
+                        AlwaysTenure=*)
+                                AlwaysTenure=${OPTARG#*=}
+                                ;;
+                        BackgroundCompilation=*)
+                                BackgroundCompilation=${OPTARG#*=}
+                                ;;
+                        DoEscapeAnalysis=*)
+                                DoEscapeAnalysis=${OPTARG#*=}
+                                ;;
+                        UseInlineCaches=*)
+                                UseInlineCaches=${OPTARG#*=}
+                                ;;
+                        UseLoopPredicate=*)
+                                UseLoopPredicate=${OPTARG#*=}
+                                ;;
+                        UseStringDeduplication=*)
+                                UseStringDeduplication=${OPTARG#*=}
+                                ;;
+                        UseSuperWord=*)
+                                UseSuperWord=${OPTARG#*=}
+                                ;;
+                        UseTypeSpeculation=*)
+                                UseTypeSpeculation=${OPTARG#*=}
+                                ;;
 			*)
 		esac
 		;;
@@ -336,7 +409,7 @@ function runIterations() {
 		echo "***************************************" >> ${LOGFILE}
 		if [ ${RE_DEPLOY} == "true" ]; then
 			echo "Deploying the application..." >> ${LOGFILE}
-			${SCRIPT_REPO}/tfb-qrh-deploy-openshift.sh -s ${BENCHMARK_SERVER} -n ${NAMESPACE} -i ${SCALING} -g ${TFB_IMAGE} --cpureq=${CPU_REQ} --memreq=${MEM_REQ} --cpulim=${CPU_LIM} --memlim=${MEM_LIM} --maxinlinelevel=${maxinlinelevel} --quarkustpcorethreads=${quarkustpcorethreads} --quarkustpqueuesize=${quarkustpqueuesize} --quarkusdatasourcejdbcminsize=${quarkusdatasourcejdbcminsize} --quarkusdatasourcejdbcmaxsize=${quarkusdatasourcejdbcmaxsize} >> ${LOGFILE}
+			${SCRIPT_REPO}/tfb-qrh-deploy-openshift.sh -s ${BENCHMARK_SERVER} -i ${SCALING} -g ${TFB_IMAGE} --cpureq=${CPU_REQ} --memreq=${MEM_REQ} --cpulim=${CPU_LIM} --memlim=${MEM_LIM} --usertunables=${OPTIONS_VAR} --quarkustpcorethreads=${quarkustpcorethreads} --quarkustpqueuesize=${quarkustpqueuesize} --quarkusdatasourcejdbcminsize=${quarkusdatasourcejdbcminsize} --quarkusdatasourcejdbcmaxsize=${quarkusdatasourcejdbcmaxsize} --FreqInlineSize=${FreqInlineSize} --MaxInlineLevel=${MaxInlineLevel} --MinInliningThreshold=${MinInliningThreshold} --CompileThreshold=${CompileThreshold} --CompileThresholdScaling=${CompileThresholdScaling} --ConcGCThreads=${ConcGCThreads} --InlineSmallCode=${InlineSmallCode} --LoopUnrollLimit=${LoopUnrollLimit} --LoopUnrollMin=${LoopUnrollMin} --MinSurvivorRatio=${MinSurvivorRatio} --NewRatio=${NewRatio} --TieredStopAtLevel=${TieredStopAtLevel} --TieredCompilation=${TieredCompilation} --AllowParallelDefineClass=${AllowParallelDefineClass} --AllowVectorizeOnDemand=${AllowVectorizeOnDemand} --AlwaysCompileLoopMethods=${AlwaysCompileLoopMethods} --AlwaysPreTouch=${AlwaysPreTouch} --AlwaysTenure=${AlwaysTenure} --BackgroundCompilation=${BackgroundCompilation} --DoEscapeAnalysis=${DoEscapeAnalysis} --UseInlineCaches=${UseInlineCaches} --UseLoopPredicate=${UseLoopPredicate} --UseStringDeduplication=${UseStringDeduplication} --UseSuperWord=${UseSuperWord} --UseTypeSpeculation=${UseTypeSpeculation} >> ${LOGFILE}
 			# err_exit "Error: tfb-qrh deployment failed" >> ${LOGFILE}
 		fi
 		# Add extra sleep time for the deployment to complete as few machines takes longer time.
