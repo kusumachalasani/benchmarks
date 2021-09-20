@@ -167,6 +167,7 @@ do
                                 ;;
                         AllowVectorizeOnDemand=*)
                                 AllowVectorizeOnDemand=${OPTARG#*=}
+				;;
                         AlwaysCompileLoopMethods=*)
                                 AlwaysCompileLoopMethods=${OPTARG#*=}
                                 ;;

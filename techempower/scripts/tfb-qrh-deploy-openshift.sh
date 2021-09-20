@@ -138,6 +138,7 @@ do
                                 ;;
                         AllowVectorizeOnDemand=*)
                                 AllowVectorizeOnDemand=${OPTARG#*=}
+				;;
                         AlwaysCompileLoopMethods=*)
                                 AlwaysCompileLoopMethods=${OPTARG#*=}
                                 ;;
@@ -256,6 +257,14 @@ function createInstances() {
 		tunables_jvm_values=(FreqInlineSize MaxInlineLevel MinInliningThreshold CompileThreshold CompileThresholdScaling ConcGCThreads InlineSmallCode LoopUnrollLimit LoopUnrollMin MinSurvivorRatio NewRatio TieredStopAtLevel)
 		tunables_quarkus=(quarkustpcorethreads quarkustpqueuesize quarkusdatasourcejdbcminsize quarkusdatasourcejdbcmaxsize)
 
+		user_options=$(echo ${OPTIONS_VAR} | tr ";" "\n")
+
+		OPTIONS_VAR=""
+		for useroption in ${user_options}
+		do
+			OPTIONS_VAR="${OPTIONS_VAR} ${useroption}"
+		done
+
 		for btunable in "${tunables_jvm_boolean[@]}"
                 do
                         if [ ! -z ${!btunable} ]; then
@@ -277,14 +286,14 @@ function createInstances() {
 		for qtunable in "${tunables_quarkus[@]}"
                 do
                         if [ ! -z ${!qtunable} ]; then
-				if [ ${qtunable} == "quarkustpcorethreads" ]
-	                                OPTIONS_VAR="${OPTIONS_VAR} -Dquarkus.thread-pool.core-threads='${!qtunable}"
-				elif [ ${qtunable} == "quarkustpqueuesize" ]
-                                        OPTIONS_VAR="${OPTIONS_VAR} -Dquarkus.thread-pool.queue-size='${!qtunable}"
-				elif [ ${qtunable} == "quarkusdatasourcejdbcminsize" ]
-                                        OPTIONS_VAR="${OPTIONS_VAR} -Dquarkus.datasource.jdbc.min-size='${!qtunable}"
-				elif [ ${qtunable} == "quarkusdatasourcejdbcmaxsize" ]
-                                        OPTIONS_VAR="${OPTIONS_VAR} -Dquarkus.datasource.jdbc.max-size='${!qtunable}"
+				if [ ${qtunable} == "quarkustpcorethreads" ]; then
+	                                OPTIONS_VAR="${OPTIONS_VAR} -Dquarkus.thread-pool.core-threads=${!qtunable}"
+				elif [ ${qtunable} == "quarkustpqueuesize" ]; then
+                                        OPTIONS_VAR="${OPTIONS_VAR} -Dquarkus.thread-pool.queue-size=${!qtunable}"
+				elif [ ${qtunable} == "quarkusdatasourcejdbcminsize" ]; then
+                                        OPTIONS_VAR="${OPTIONS_VAR} -Dquarkus.datasource.jdbc.min-size=${!qtunable}"
+				elif [ ${qtunable} == "quarkusdatasourcejdbcmaxsize" ]; then
+                                        OPTIONS_VAR="${OPTIONS_VAR} -Dquarkus.datasource.jdbc.max-size=${!qtunable}"
 				fi
                         fi
 
