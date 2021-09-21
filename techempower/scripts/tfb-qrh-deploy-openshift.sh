@@ -315,6 +315,9 @@ function createInstances() {
                         sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ - name: "QUARKUS_DATASOURCE_PASSWORD"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
 
 		
+		## Debug
+		cat ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml 
+		
 		oc create -f ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml -n ${NAMESPACE}
 		#err_exit "Error: Issue in deploying tfb-qrh." >> ${LOGFILE}
 
