@@ -339,6 +339,9 @@ function createInstances() {
 	## extra sleep time
 	sleep 60
 	
+	## Debug
+	oc get pods -w
+	
 	# Check if the application is running
 	#check_app >> ${LOGFILE}
 }
