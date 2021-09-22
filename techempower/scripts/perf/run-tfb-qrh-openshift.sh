@@ -415,6 +415,11 @@ function runIterations() {
 		fi
 		# Add extra sleep time for the deployment to complete as few machines takes longer time.
 		sleep 300
+		
+		##Debug
+		#Extra sleep time
+		sleep 600
+		
 		# Start the load
 		RESULTS_DIR_I=${RESULTS_DIR_R}/ITR-${itr}
 		echo "Running ${WARMUPS} warmups" >> ${LOGFILE}
