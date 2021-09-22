@@ -316,11 +316,17 @@ function createInstances() {
 
 		
 		## Debug
-		cat ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml 
-		
+		#cat ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml 
+		echo " oc create -f ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml -n ${NAMESPACE} "
 		oc create -f ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml -n ${NAMESPACE}
 		#err_exit "Error: Issue in deploying tfb-qrh." >> ${LOGFILE}
 
+		##Debug
+		echo "oc get deployments -n ${NAMESPACE}"
+		oc get deployments -n ${NAMESPACE}
+		echo "oc get pods -n ${NAMESPACE}"
+		oc get pods -n ${NAMESPACE}
+		
 		((TFB_PORT=TFB_PORT+1))
 
 	done
