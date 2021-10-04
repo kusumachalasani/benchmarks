@@ -50,6 +50,34 @@ if [ -z "${NAMESPACE}" ]; then
 	NAMESPACE="${DEFAULT_NAMESPACE}"
 fi
 
+# Removes the tfb-qrh instances from minikube
+# output: Removes the tfb-qrh and tfb-database deployments, services and service monitors
+function remove_tfb_minikube() {
+        TFB_DEPLOYMENTS=($(kubectl get deployments --namespace=${NAMESPACE} | grep -e "tfb-qrh" -e "tfb-database" | cut -d " " -f1))
+
+        for de in "${TFB_DEPLOYMENTS[@]}"
+        do
+                kubectl delete deployment ${de}
+        done
+
+        #Delete the services and routes if any
+        TFB_SERVICES=($(oc get svc --namespace=${NAMESPACE} | grep -e "tfb-qrh" -e "tfb-database" | cut -d " " -f1))
+        for se in "${TFB_SERVICES[@]}"
+        do
+                kubectl delete svc ${se} --namespace=${NAMESPACE}
+        done
+        TFB_ROUTES=($(oc get route --namespace=${NAMESPACE} | grep -e "tfb-qrh" -e "tfb-database" | cut -d " " -f1))
+        for ro in "${TFB_ROUTES[@]}"
+        do
+                kubectl delete route ${ro} --namespace=${NAMESPACE}
+        done
+        TFB_SERVICE_MONITORS=($(oc get servicemonitor --namespace=${NAMESPACE} | grep -e "tfb-qrh" -e "tfb-database" | cut -d " " -f1))
+        for sm in "${TFB_SERVICE_MONITORS[@]}"
+        do
+                kubectl delete servicemonitor ${sm} --namespace=${NAMESPACE}
+        done
+}
+
 # Removes the tfb-qrh instances from openshift
 # output: Removes the tfb-qrh and tfb-database deployments, services, service monitors and routes
 function remove_tfb_openshift() {

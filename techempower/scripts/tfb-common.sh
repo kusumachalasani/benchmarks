@@ -85,19 +85,14 @@ function get_ip() {
 function check_app() {
 	if [ "${CLUSTER_TYPE}" == "openshift" ]; then
 		CMD=$(oc get pods --namespace=${NAMESPACE} | grep "tfb-qrh" | grep "Running" | cut -d " " -f1)
+	elif [ "${CLUSTER_TYPE}" == "minikube" ]; then
+                CMD=$(kubectl get pods --namespace=${NAMESPACE} | grep "tfb-qrh" | grep "Running" | cut -d " " -f1)
 	fi
 	for status in "${CMD[@]}"
 	do
 		if [ -z "${status}" ]; then
-			#echo "Application pod did not come up"
-			# Wait for 60sec more and check again before exiting
-			sleep 60
-			CMD=$(oc get pods --namespace=${NAMESPACE} | grep "tfb-qrh" | grep "Running" | cut -d " " -f1)
-			status1=${CMD[@]}
-			if [ -z "${status1}" ]; then
-				echo "Application pod did not come up"
-				exit -1;
-			fi
+			echo "Application pod did not come up"
+			exit -1;
 		fi
 	done
 }
