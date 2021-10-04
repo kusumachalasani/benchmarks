@@ -77,10 +77,6 @@ function parseData() {
 			if [ "${weberrors}" != "" ]; then
 				wer_sum=`expr ${wer_sum} + ${weberrors}`
 			fi
-			if [ ${total_weberror_avg} -ge 50 ]; then
-				echo "1 , 99999 , 99999 , 99999 , 99999 , 99999 , 999999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999" >> ${RESULTS_DIR_J}/../Metrics-prom.log
-        			echo ", 99999 , 99999 , 99999 , 99999 , 9999 , 0 , 0" >> ${RESULTS_DIR_J}/../Metrics-wrk.log
-			fi
 		done
 		echo "${run},${thrp_sum},${resp_sum},${wer_sum},${max_responsetime},${stddev_responsetime}" >> ${RESULTS_DIR_J}/Throughput-${TYPE}-${itr}.log
 		echo "${run} , ${CPU_REQ} , ${MEM_REQ} , ${CPU_LIM} , ${MEM_LIM} , ${thrp_sum} , ${responsetime} , ${wer_sum} , ${max_responsetime} , ${stddev_responsetime}" >> ${RESULTS_DIR_J}/Throughput-${TYPE}-raw.log
@@ -130,6 +126,11 @@ function parseResults() {
 	if [ ${total_weberror_avg} != 0 ]; then
 		echo "There are web_errors during the load run. For more details check in the results directory mentioned in setup.log"
 	fi
+	if [[ ${total_weberror_avg} -ge 50 ]]; then
+		echo "1 , 99999 , 99999 , 99999 , 99999 , 99999 , 999999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999 , 99999" >> ${RESULTS_DIR_J}/../Metrics-prom.log
+        	echo ", 99999 , 99999 , 99999 , 99999 , 9999 , 0 , 0" >> ${RESULTS_DIR_J}/../Metrics-wrk.log
+	fi
+
 	echo ", ${total_throughput_avg} , ${total_responsetime_avg} , ${total_responsetime_max} , ${total_stdev_resptime_avg} , ${total_weberror_avg} , ${ci_throughput} , ${ci_responsetime}" >> ${RESULTS_DIR_J}/../Metrics-wrk.log
 }
 
