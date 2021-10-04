@@ -413,10 +413,10 @@ function runIterations() {
 		if [ ${RE_DEPLOY} == "true" ]; then
 			echo "Deploying the application..." >> ${LOGFILE}
 			${SCRIPT_REPO}/tfb-qrh-deploy-openshift.sh -s ${BENCHMARK_SERVER} -n ${NAMESPACE} -i ${SCALING} -g ${TFB_IMAGE} --cpureq=${CPU_REQ} --memreq=${MEM_REQ} --cpulim=${CPU_LIM} --memlim=${MEM_LIM} --usertunables=${OPTIONS_VAR} --quarkustpcorethreads=${quarkustpcorethreads} --quarkustpqueuesize=${quarkustpqueuesize} --quarkusdatasourcejdbcminsize=${quarkusdatasourcejdbcminsize} --quarkusdatasourcejdbcmaxsize=${quarkusdatasourcejdbcmaxsize} --FreqInlineSize=${FreqInlineSize} --MaxInlineLevel=${MaxInlineLevel} --MinInliningThreshold=${MinInliningThreshold} --CompileThreshold=${CompileThreshold} --CompileThresholdScaling=${CompileThresholdScaling} --ConcGCThreads=${ConcGCThreads} --InlineSmallCode=${InlineSmallCode} --LoopUnrollLimit=${LoopUnrollLimit} --LoopUnrollMin=${LoopUnrollMin} --MinSurvivorRatio=${MinSurvivorRatio} --NewRatio=${NewRatio} --TieredStopAtLevel=${TieredStopAtLevel} --TieredCompilation=${TieredCompilation} --AllowParallelDefineClass=${AllowParallelDefineClass} --AllowVectorizeOnDemand=${AllowVectorizeOnDemand} --AlwaysCompileLoopMethods=${AlwaysCompileLoopMethods} --AlwaysPreTouch=${AlwaysPreTouch} --AlwaysTenure=${AlwaysTenure} --BackgroundCompilation=${BackgroundCompilation} --DoEscapeAnalysis=${DoEscapeAnalysis} --UseInlineCaches=${UseInlineCaches} --UseLoopPredicate=${UseLoopPredicate} --UseStringDeduplication=${UseStringDeduplication} --UseSuperWord=${UseSuperWord} --UseTypeSpeculation=${UseTypeSpeculation} >> ${LOGFILE}
-			# err_exit "Error: tfb-qrh deployment failed" >> ${LOGFILE}
+			# err_exit "Error: tfb-qrh deployment failed" >> ${LOGFILE}		
 		fi
 		# Add extra sleep time for the deployment to complete as few machines takes longer time.
-		sleep 180
+		sleep 300
 		
 		##Debug
 		#Extra sleep time
