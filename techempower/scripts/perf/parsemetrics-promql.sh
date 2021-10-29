@@ -413,12 +413,13 @@ CLUSTER_LOGS=(c_mem c_cpu)
 TIMER_RATE_LOGS=(app_timer_count_rate_1m app_timer_count_rate_3m app_timer_count_rate_5m app_timer_count_rate_7m app_timer_count_rate_9m app_timer_count_rate_15m app_timer_count_rate_30m app_timer_sum_rate_1m app_timer_sum_rate_3m app_timer_sum_rate_5m app_timer_sum_rate_7m app_timer_sum_rate_9m app_timer_sum_rate_15m app_timer_sum_rate_30m)
 SERVER_REQUESTS_RATE_LOGS=(server_requests_count_rate_1m server_requests_count_rate_3m server_requests_count_rate_5m server_requests_count_rate_7m server_requests_count_rate_9m server_requests_count_rate_15m server_requests_count_rate_30m server_requests_sum_rate_1m server_requests_sum_rate_3m server_requests_sum_rate_5m server_requests_sum_rate_7m server_requests_sum_rate_9m server_requests_sum_rate_15m server_requests_sum_rate_30m)
 LATENCY_P_LOGS=(latency_seconds_quan_50 latency_seconds_quan_95 latency_seconds_quan_98 latency_seconds_quan_99 latency_seconds_quan_999)
-HTTP_P_LOGS=(http_seconds_quan_50 http_seconds_quan_95 http_seconds_quan_97 http_seconds_quan_98 http_seconds_quan_99 http_seconds_quan_999 http_seconds_quan_9999 http_seconds_quan_99999 http_seconds_quan_100 http_seconds_histo_quan_50 http_seconds_histo_quan_95 http_seconds_histo_quan_97 http_seconds_histo_quan_98 http_seconds_histo_quan_99 http_seconds_histo_quan_999 http_seconds_histo_quan_9999 http_seconds_histo_quan_99999 http_seconds_histo_quan_100)
-MICROMETER_LOGS=(app_timer_sum app_timer_count ${TIMER_RATE_LOGS[@]} server_requests_sum server_requests_count server_requests_max ${SERVER_REQUESTS_RATE_LOGS[@]} ${LATENCY_P_LOGS[@]} latency_seconds_max ${HTTP_P_LOGS[@]})
+HTTP_P_LOGS=(http_seconds_quan_50 http_seconds_quan_95 http_seconds_quan_97 http_seconds_quan_98 http_seconds_quan_99 http_seconds_quan_999 http_seconds_quan_9999 http_seconds_quan_99999 http_seconds_quan_100)
+HTTP_HISTO_LOGS=(http_seconds_histo_quan_50 http_seconds_histo_quan_95 http_seconds_histo_quan_97 http_seconds_histo_quan_98 http_seconds_histo_quan_99 http_seconds_histo_quan_999 http_seconds_histo_quan_9999 http_seconds_histo_quan_99999 http_seconds_histo_quan_100)
+MICROMETER_LOGS=(app_timer_sum app_timer_count ${TIMER_RATE_LOGS[@]} server_requests_sum server_requests_count server_requests_max ${SERVER_REQUESTS_RATE_LOGS[@]} ${LATENCY_P_LOGS[@]} latency_seconds_max ${HTTP_P_LOGS[@]} ${HTTP_HISTO_LOGS[@]})
 APP_CALC_METRIC_LOGS=(app_timer_rsp_time app_timer_thrpt app_timer_rsp_time_rate_3m app_timer_thrpt_rate_3m)
 SERVER_REQUESTS_METRIC_LOGS=(server_requests_rsp_time server_requests_thrpt server_requests_rsp_time_rate_3m server_requests_thrpt_rate_3m)
 METRIC_LOGS=(${APP_CALC_METRIC_LOGS[@]} ${SERVER_REQUESTS_METRIC_LOGS[@]})
-TOTAL_LOGS=(${POD_CPU_LOGS[@]} ${POD_MEM_LOGS[@]} ${MICROMETER_LOGS[@]} ${METRIC_LOGS[@]} cpu_min cpu_max mem_min mem_max)
+TOTAL_LOGS=(${POD_CPU_LOGS[@]} ${POD_MEM_LOGS[@]} ${MICROMETER_LOGS[@]} {METRIC_LOGS[@]} cpu_min cpu_max mem_min mem_max)
 
 
 TOTAL_ITR=$1

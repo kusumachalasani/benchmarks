@@ -484,6 +484,9 @@ sleep 10
 
 # Display the Metrics log file
 paste ${RESULTS_DIR_ROOT}/Metrics-prom.log ${RESULTS_DIR_ROOT}/Metrics-wrk.log ${RESULTS_DIR_ROOT}/Metrics-config.log
+paste ${RESULTS_DIR_ROOT}/Metrics-quantiles-prom.log 
+paste ${RESULTS_DIR_ROOT}/Metrics-histogram-prom.log
+
 #cat ${RESULTS_DIR_ROOT}/app-calc-metrics-measure-raw.log
 #cat ${RESULTS_DIR_ROOT}/server_requests-metrics-${TYPE}-raw.log
 #cat ${RESULTS_DIR_ROOT}/Metrics-raw.log

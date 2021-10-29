@@ -503,7 +503,7 @@ function get_latency_max() {
 	done
 }
 
-function get_http_quantiles() {
+function get_http_mm_quantiles() {
 
         URL=$1
         TOKEN=$2
@@ -511,6 +511,8 @@ function get_http_quantiles() {
         ITER=$4
         APP_NAME=$5
 
+	while true
+	do
         # Processing curl output "timestamp value" using jq tool.
         curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="0.5",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_50-${ITER}.json
         curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="0.75",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_75-${ITER}.json
@@ -520,8 +522,19 @@ function get_http_quantiles() {
         curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="0.999",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_999-${ITER}.json
         curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="0.9999",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_9999-${ITER}.json
         curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="0.99999",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_99999-${ITER}.json
-	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="1.0",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_100-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="1.0",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_100-${ITER}.json
+	done
 
+}
+function get_http_quantiles() {
+
+        URL=$1
+        TOKEN=$2
+        RESULTS_DIR=$3
+        ITER=$4
+        APP_NAME=$5
+
+        # Processing curl output "timestamp value" using jq tool.
         curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.50, sum(rate(http_server_requests_seconds_bucket{uri="/db"}[3m])) by (le))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_le_50-${ITER}.json
         curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.75, sum(rate(http_server_requests_seconds_bucket{uri="/db"}[3m])) by (le))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_le_75-${ITER}.json
         curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{uri="/db"}[3m])) by (le))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_le_95-${ITER}.json
@@ -582,6 +595,8 @@ timeout ${TIMEOUT} bash -c  "get_server_requests_max ${URL} ${TOKEN} ${RESULTS_D
 #timeout ${TIMEOUT} bash -c  "get_server_requests_method_max ${URL} ${TOKEN} ${RESULTS_DIR} ${ITER} ${APP_NAME}" &
 #timeout ${TIMEOUT} bash -c  "get_latency_quantiles ${URL} ${TOKEN} ${RESULTS_DIR} ${ITER} ${APP_NAME}" &
 #timeout ${TIMEOUT} bash -c  "get_latency_max ${URL} ${TOKEN} ${RESULTS_DIR} ${ITER} ${APP_NAME}" &
+timeout ${TIMEOUT} bash -c  "get_http_mm_quantiles ${URL} ${TOKEN} ${RESULTS_DIR} ${ITER} ${APP_NAME}" &
+
 sleep ${TIMEOUT}
 
 # Calculate the rate of metrics for the last 1,3,5,7,9,15,30 mins.
