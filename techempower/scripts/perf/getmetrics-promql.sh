@@ -312,7 +312,7 @@ function get_server_requests_max()
 	while true
 	do
 		# Processing curl output "timestamp value" using jq tool.
-		curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(http_server_requests_seconds_max) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_max-${ITER}.json
+		curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(http_server_requests_seconds_max{uri="/db"}) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_max-${ITER}.json
 		err_exit "Error: could not get server_requests_max details of the pod" >>setup.log
 	done
 }
@@ -417,8 +417,8 @@ function get_server_requests_sum_rate()
 	ITER=$4
 	APP_NAME=$5
 	# Processing curl output "timestamp value" using jq tool.
-	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_sum[1m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_sum_rate_1m-${ITER}.json
-	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_sum[3m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_sum_rate_3m-${ITER}.json
+	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_sum{uri="/db"}[1m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_sum_rate_1m-${ITER}.json
+	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_sum{uri="/db"}[3m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_sum_rate_3m-${ITER}.json
 	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_sum[5m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_sum_rate_5m-${ITER}.json
 	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_sum[7m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_sum_rate_7m-${ITER}.json
 	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_sum[9m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_sum_rate_9m-${ITER}.json
@@ -435,13 +435,40 @@ function get_server_requests_count_rate()
 	ITER=$4
 	APP_NAME=$5
 	# Processing curl output "timestamp value" using jq tool.
-	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_count[1m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_count_rate_1m-${ITER}.json
-	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_count[3m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_count_rate_3m-${ITER}.json
+	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_count{uri="/db"}[1m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_count_rate_1m-${ITER}.json
+	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_count{uri="/db"}[3m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_count_rate_3m-${ITER}.json
 	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_count[5m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_count_rate_5m-${ITER}.json
 	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_count[7m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_count_rate_7m-${ITER}.json
 	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_count[9m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_count_rate_9m-${ITER}.json
 	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_count[15m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_count_rate_15m-${ITER}.json
 	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=sum(rate(http_server_requests_seconds_count[30m])) by (pod)' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_count_rate_30m-${ITER}.json
+
+}
+
+#### Collect per server_requests_sum for last 1,3,5,7,9,15 and 30 mins.
+function get_server_requests_sum_rate_uri()
+{
+        URL=$1
+        TOKEN=$2
+        RESULTS_DIR=$3
+        ITER=$4
+        APP_NAME=$5
+        # Processing curl output "timestamp value" using jq tool.
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=rate(http_server_requests_seconds_sum{uri="/db"}[1m])' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_sum_rate_1m_uri-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=rate(http_server_requests_seconds_sum{uri="/db"}[3m])' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_sum_rate_3m_uri-${ITER}.json
+}
+
+## Collect per second server_requests_count for last 1,3,5,7,9,15 and 30 mins.
+function get_server_requests_count_rate_uri()
+{
+        URL=$1
+        TOKEN=$2
+        RESULTS_DIR=$3
+        ITER=$4
+        APP_NAME=$5
+        # Processing curl output "timestamp value" using jq tool.
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=rate(http_server_requests_seconds_count{uri="/db"}[1m])' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_count_rate_1m_uri-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=rate(http_server_requests_seconds_count{uri="/db"}[3m])' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/server_requests_count_rate_3m_uri-${ITER}.json
 
 }
 
@@ -474,6 +501,47 @@ function get_latency_max() {
 		# Processing curl output "timestamp value" using jq tool.
 		curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=latency_seconds_max' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/latency_seconds_max-${ITER}.json
 	done
+}
+
+function get_http_quantiles() {
+
+        URL=$1
+        TOKEN=$2
+        RESULTS_DIR=$3
+        ITER=$4
+        APP_NAME=$5
+
+        # Processing curl output "timestamp value" using jq tool.
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="0.5",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_50-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="0.75",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_75-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="0.95",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_95-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="0.97",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_97-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="0.99",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_99-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="0.999",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_999-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="0.9999",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_9999-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="0.99999",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_99999-${ITER}.json
+	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{status="200",uri="/db",quantile="1.0",}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' | grep "${APP_NAME}" >> ${RESULTS_DIR}/http_seconds_quan_100-${ITER}.json
+
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.50, sum(rate(http_server_requests_seconds_bucket{uri="/db"}[3m])) by (le))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_le_50-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.75, sum(rate(http_server_requests_seconds_bucket{uri="/db"}[3m])) by (le))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_le_75-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{uri="/db"}[3m])) by (le))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_le_95-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.97, sum(rate(http_server_requests_seconds_bucket{uri="/db"}[3m])) by (le))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_le_97-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{uri="/db"}[3m])) by (le))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_le_99-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.999, sum(rate(http_server_requests_seconds_bucket{uri="/db"}[3m])) by (le))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_le_999-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.9999, sum(rate(http_server_requests_seconds_bucket{uri="/db"}[3m])) by (le))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_le_9999-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.99999, sum(rate(http_server_requests_seconds_bucket{uri="/db"}[3m])) by (le))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_le_99999-${ITER}.json
+	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(1.0, sum(rate(http_server_requests_seconds_bucket{uri="/db"}[3m])) by (le))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_le_100-${ITER}.json
+
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.50, rate(http_server_requests_seconds_bucket{uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_50-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.75, rate(http_server_requests_seconds_bucket{uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_75-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_95-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.97, rate(http_server_requests_seconds_bucket{uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_97-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.99, rate(http_server_requests_seconds_bucket{uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_99-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.999, rate(http_server_requests_seconds_bucket{uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_999-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.9999, rate(http_server_requests_seconds_bucket{uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_9999-${ITER}.json
+        curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.99999, rate(http_server_requests_seconds_bucket{uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_99999-${ITER}.json
+	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(1.0, rate(http_server_requests_seconds_bucket{uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_100-${ITER}.json
+
 }
 
 ITER=$1
@@ -521,3 +589,8 @@ sleep ${TIMEOUT}
 #get_app_timer_count_rate ${URL} ${TOKEN} ${RESULTS_DIR} ${ITER} ${APP_NAME} &
 get_server_requests_sum_rate ${URL} ${TOKEN} ${RESULTS_DIR} ${ITER} ${APP_NAME} &
 get_server_requests_count_rate ${URL} ${TOKEN} ${RESULTS_DIR} ${ITER} ${APP_NAME} &
+
+get_http_quantiles ${URL} ${TOKEN} ${RESULTS_DIR} ${ITER} ${APP_NAME} &
+get_server_requests_sum_rate_uri ${URL} ${TOKEN} ${RESULTS_DIR} ${ITER} ${APP_NAME} &
+get_server_requests_count_rate_uri ${URL} ${TOKEN} ${RESULTS_DIR} ${ITER} ${APP_NAME} &
+
