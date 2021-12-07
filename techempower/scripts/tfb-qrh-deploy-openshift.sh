@@ -305,7 +305,7 @@ function createInstances() {
 
 		
 	### Update postgres informations - specific to MW hardware runs
-			sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ \ \ value: "jdbc:postgresql://mwperf-server02.perf.lab.eng.rdu2.redhat.com:5432/techempower?loggerLevel=OFF&disableColumnSanitiser=true&assumeMinServerVersion=12&sslmode=disable"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
+			sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ \ \ value: "jdbc:postgresql://10.1.45.55:5432/techempower?loggerLevel=OFF&disableColumnSanitiser=true&assumeMinServerVersion=12&sslmode=disable"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
                         sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ - name: "QUARKUS_DATASOURCE_JDBC_URL"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
 
 			sed -i '/env:/a \ \ \ \ \ \ \ \ \ \ \ \ value: "techempower"' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
