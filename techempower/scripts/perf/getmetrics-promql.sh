@@ -590,7 +590,10 @@ function get_http_quantiles() {
         curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.99999, rate(http_server_requests_seconds_bucket{status="200",uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_all_histo_quan_99999-${ITER}.json
 	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(1.0, rate(http_server_requests_seconds_bucket{status="200",uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_all_histo_quan_100-${ITER}.json
 	
-
+	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{quantile="0.95",status="200",uri="/db"}[3m]' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_smry_qus3_histo_quan_95-${ITER}.json
+	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{quantile="0.95",uri="/db"}[3m]' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_smry_qu3_histo_quan_95-${ITER}.json
+	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{quantile="0.95",uri="/db"}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_smry_qu_histo_quan_95-${ITER}.json
+	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=http_server_requests_seconds{quantile="0.95",status="200",uri="/db"}' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_smry_qus_histo_quan_95-${ITER}.json
 }
 
 ITER=$1
