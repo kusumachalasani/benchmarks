@@ -633,7 +633,7 @@ TOKEN=`oc whoami --show-token`
 export -f err_exit get_cpu get_mem_rss get_mem_usage get_receive_bandwidth get_transmit_bandwidth
 export -f get_app_timer_sum get_app_timer_count get_app_timer_secondspercount get_app_timer_max get_server_errors get_server_requests_sum get_server_requests_count get_server_requests_max 
 export -f get_app_timer_method_sum get_app_timer_method_count get_app_timer_method_max get_server_requests_method_sum get_server_requests_method_count get_server_requests_method_max
-export -f get_latency_quantiles get_latency_max get_http_mm_quantiles
+export -f get_latency_quantiles get_latency_max get_http_mm_quantiles get_http_all_mm_quantiles
 
 echo "Collecting metric data" >> setup.log
 timeout ${TIMEOUT} bash -c  "get_cpu ${URL} ${TOKEN} ${RESULTS_DIR} ${ITER} ${APP_NAME}" &
