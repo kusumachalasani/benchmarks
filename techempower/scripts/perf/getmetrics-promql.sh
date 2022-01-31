@@ -554,7 +554,10 @@ function get_http_quantiles() {
         curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.9999, rate(http_server_requests_seconds_bucket{uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_9999-${ITER}.json
         curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(0.99999, rate(http_server_requests_seconds_bucket{uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_99999-${ITER}.json
 	curl --silent -G -kH "Authorization: Bearer ${TOKEN}" --data-urlencode 'query=histogram_quantile(1.0, rate(http_server_requests_seconds_bucket{uri="/db"}[3m]))' ${URL} | jq '[ .data.result[] | [ .value[0], .metric.namespace, .metric.pod, .value[1]|tostring] | join(";") ]' >> ${RESULTS_DIR}/http_seconds_histo_quan_100-${ITER}.json
-
+	
+	## hardcoding for now to collect the metrics.
+	curl tfb-qrh-service-0-autotune-tfb.apps.cluster-a.scalelab/q/metrics >> ${RESULTS_DIR}/metrics-${ITER}.json
+	
 }
 
 ITER=$1
@@ -567,6 +570,7 @@ BENCHMARK_SERVER=$4
 APP_NAME=$5
 URL=https://${QUERY_APP}.${BENCHMARK_SERVER}/api/v1/query
 TOKEN=`oc whoami --show-token`
+
 
 export -f err_exit get_cpu get_mem_rss get_mem_usage get_receive_bandwidth get_transmit_bandwidth
 export -f get_app_timer_sum get_app_timer_count get_app_timer_secondspercount get_app_timer_max get_server_errors get_server_requests_sum get_server_requests_count get_server_requests_max 
