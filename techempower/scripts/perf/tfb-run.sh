@@ -373,7 +373,7 @@ function run_wrk_workload() {
 	sleep 2
 	${HYPERFOIL_DIR}/wrk.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s http://${IP_ADDR}/fortunes > ${RESULTS_LOG}-fortunes.log
 	sleep 2
-	${HYPERFOIL_DIR}/wrk.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s http://${IP_ADDR}/queries/query=20 > ${RESULTS_LOG}-queries.log
+	${HYPERFOIL_DIR}/wrk.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s http://${IP_ADDR}/queries?query=20 > ${RESULTS_LOG}-queries.log
 	sleep 2
 	${HYPERFOIL_DIR}/wrk.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s http://${IP_ADDR}/plaintext > ${RESULTS_LOG}-plaintext.log
         sleep 2
