@@ -42,12 +42,16 @@ function parseData() {
 		elif [[ ${CLUSTER_TYPE} == "minikube" ]]; then
 			SVC_APIS=($(${K_EXEC} get svc --namespace=${NAMESPACE} | grep "${APP_NAME}" | cut -d " " -f1))
 		fi
+
+		for endpoint in "${ENDPOINTS[@]}"
+                do
+
 		for svc_api  in "${SVC_APIS[@]}"
 		do
 			throughput=0
 			responsetime=0
-
-			RESULT_LOG=${RESULTS_DIR_P}/wrk-${svc_api}-${TYPE}-${run}.log
+			
+			RESULT_LOG=${RESULTS_DIR_P}/wrk-${svc_api}-${TYPE}-${run}-${endpoint}.log
 			throughput=`cat ${RESULT_LOG} | grep "Requests" | cut -d ":" -f2 `
 			responsetime=`cat ${RESULT_LOG} | grep "Latency:" | cut -d ":" -f2 | tr -s " " | cut -d " " -f2 `
 			max_responsetime=`cat ${RESULT_LOG} | grep "Latency:" | cut -d ":" -f2 | tr -s " " | cut -d " " -f6 `
@@ -88,8 +92,9 @@ function parseData() {
         			echo ", 99999 , 99999 , 99999 , 99999 , 9999 , 0 , 0" >> ${RESULTS_DIR_J}/../Metrics-wrk.log
 			fi
 		done
-		echo "${run},${thrp_sum},${resp_sum},${wer_sum},${max_responsetime},${stddev_responsetime}" >> ${RESULTS_DIR_J}/Throughput-${TYPE}-${itr}.log
-		echo "${run} , ${CPU_REQ} , ${MEM_REQ} , ${CPU_LIM} , ${MEM_LIM} , ${thrp_sum} , ${responsetime} , ${wer_sum} , ${max_responsetime} , ${stddev_responsetime}" >> ${RESULTS_DIR_J}/Throughput-${TYPE}-raw.log
+		echo "${run},${thrp_sum},${resp_sum},${wer_sum},${max_responsetime},${stddev_responsetime}" >> ${RESULTS_DIR_J}/Throughput-${endpoint}-${TYPE}-${itr}.log
+		echo "${run} , ${CPU_REQ} , ${MEM_REQ} , ${CPU_LIM} , ${MEM_LIM} , ${thrp_sum} , ${responsetime} , ${wer_sum} , ${max_responsetime} , ${stddev_responsetime}" >> ${RESULTS_DIR_J}/Throughput-${endpoint}-${TYPE}-raw.log
+		done
 	done
 }
 
@@ -106,29 +111,37 @@ function parseResults() {
 		parseData warmup ${WARMUPS} ${itr}
 		parseData measure ${MEASURES} ${itr}
 		#Calculte Average and Median of Throughput, Memory and CPU  scores
-		cat ${RESULTS_DIR_J}/Throughput-measure-${itr}.log | cut -d "," -f2 >> ${RESULTS_DIR_J}/throughput-measure-temp.log
-		cat ${RESULTS_DIR_J}/Throughput-measure-${itr}.log | cut -d "," -f3 >> ${RESULTS_DIR_J}/responsetime-measure-temp.log
-		cat ${RESULTS_DIR_J}/Throughput-measure-${itr}.log | cut -d "," -f4 >> ${RESULTS_DIR_J}/weberror-measure-temp.log
-		cat ${RESULTS_DIR_J}/Throughput-measure-${itr}.log | cut -d "," -f5 >> ${RESULTS_DIR_J}/responsetime_max-measure-temp.log
-		cat ${RESULTS_DIR_J}/Throughput-measure-${itr}.log | cut -d "," -f6 >> ${RESULTS_DIR_J}/stdev_resptime-measure-temp.log
+		for endpoint in "${ENDPOINTS[@]}"
+                do
+		cat ${RESULTS_DIR_J}/Throughput-${endpoint}-measure-${itr}.log | cut -d "," -f2 >> ${RESULTS_DIR_J}/throughput-${endpoint}-measure-temp.log
+		cat ${RESULTS_DIR_J}/Throughput-${endpoint}-measure-${itr}.log | cut -d "," -f3 >> ${RESULTS_DIR_J}/responsetime-${endpoint}-measure-temp.log
+		cat ${RESULTS_DIR_J}/Throughput-${endpoint}-measure-${itr}.log | cut -d "," -f4 >> ${RESULTS_DIR_J}/weberror-${endpoint}-measure-temp.log
+		cat ${RESULTS_DIR_J}/Throughput-${endpoint}-measure-${itr}.log | cut -d "," -f5 >> ${RESULTS_DIR_J}/responsetime_max-${endpoint}-measure-temp.log
+		cat ${RESULTS_DIR_J}/Throughput-${endpoint}-measure-${itr}.log | cut -d "," -f6 >> ${RESULTS_DIR_J}/stdev_resptime-${endpoint}-measure-temp.log
+		done
 	done
 	###### Add different raw logs we want to merge
 	#Cumulative raw data
-	paste ${RESULTS_DIR_J}/Throughput-measure-raw.log >>  ${RESULTS_DIR_J}/../Metrics-raw.log
+	for endpoint in "${ENDPOINTS[@]}"
+        do
+	paste ${RESULTS_DIR_J}/Throughput-${endpoint}-measure-raw.log >>  ${RESULTS_DIR_J}/../Metrics-${endpoint}-raw.log
+	done
 
+	for endpoint in "${ENDPOINTS[@]}"
+        do
 	for metric in "${THROUGHPUT_LOGS[@]}"
 	do
 		if [ ${metric} == "cpu_min" ] || [ ${metric} == "mem_min" ]; then
-			minval=$(echo `calcMin ${RESULTS_DIR_J}/${metric}-measure-temp.log`)
+			minval=$(echo `calcMin ${RESULTS_DIR_J}/${metric}-${endpoint}-measure-temp.log`)
 			eval total_${metric}=${minval}
 		elif [ ${metric} == "cpu_max" ] || [ ${metric} == "mem_max" ] || [ ${metric} == "responsetime_max" ]; then
-			maxval=$(echo `calcMax ${RESULTS_DIR_J}/${metric}-measure-temp.log`)
+			maxval=$(echo `calcMax ${RESULTS_DIR_J}/${metric}-${endpoint}-measure-temp.log`)
 			eval total_${metric}=${maxval}
 		else
-			val=$(echo `calcAvg ${RESULTS_DIR_J}/${metric}-measure-temp.log | cut -d "=" -f2`)
+			val=$(echo `calcAvg ${RESULTS_DIR_J}/${metric}-${endpoint}-measure-temp.log | cut -d "=" -f2`)
 			eval total_${metric}_avg=${val}
 		fi
-		metric_ci=`php ${SCRIPT_REPO}/perf/ci.php ${RESULTS_DIR_J}/${metric}-measure-temp.log`
+		metric_ci=`php ${SCRIPT_REPO}/perf/ci.php ${RESULTS_DIR_J}/${metric}-${endpoint}-measure-temp.log`
 		eval ci_${metric}=${metric_ci}
 	done
 
@@ -136,10 +149,12 @@ function parseResults() {
 	if [ ${total_weberror_avg} != 0 ]; then
 		echo "There are web_errors during the load run. For more details check in the results directory mentioned in setup.log"
 	fi
-	echo ", ${total_throughput_avg} , ${total_responsetime_avg} , ${total_responsetime_max} , ${total_stdev_resptime_avg} , ${total_weberror_avg} , ${ci_throughput} , ${ci_responsetime}" >> ${RESULTS_DIR_J}/../Metrics-wrk.log
+	echo ", ${total_throughput_avg} , ${total_responsetime_avg} , ${total_responsetime_max} , ${total_stdev_resptime_avg} , ${total_weberror_avg} , ${ci_throughput} , ${ci_responsetime}" >> ${RESULTS_DIR_J}/../Metrics-${endpoint}-wrk.log
+	done
 }
 
 THROUGHPUT_LOGS=(throughput responsetime weberror responsetime_max stdev_resptime)
+ENDPOINTS=(db json fortunes plaintext queries)
 
 TOTAL_ITR=$1
 RESULTS_SC=$2

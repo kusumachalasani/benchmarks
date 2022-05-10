@@ -364,10 +364,19 @@ function run_wrk_workload() {
 	# Run the wrk load
 	echo "Running wrk load with the following parameters" >> ${LOGFILE}
 #	cmd="${HYPERFOIL_DIR}/wrk2.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s --rate=${REQUEST_RATE} http://${IP_ADDR}/db"
-	cmd="${HYPERFOIL_DIR}/wrk.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s http://${IP_ADDR}/db"
-	echo "CMD = ${cmd}" >> ${LOGFILE}
-	${cmd} > ${RESULTS_LOG}
-	sleep 3
+#	cmd="${HYPERFOIL_DIR}/wrk.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s http://${IP_ADDR}/db"
+#	echo "CMD = ${cmd}" >> ${LOGFILE}
+#	${cmd} > ${RESULTS_LOG}
+	${HYPERFOIL_DIR}/wrk.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s http://${IP_ADDR}/db > ${RESULTS_LOG}-db.log
+	sleep 2
+	${HYPERFOIL_DIR}/wrk.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s http://${IP_ADDR}/json > ${RESULTS_LOG}-json.log
+	sleep 2
+	${HYPERFOIL_DIR}/wrk.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s http://${IP_ADDR}/fortunes > ${RESULTS_LOG}-fortunes.log
+	sleep 2
+	${HYPERFOIL_DIR}/wrk.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s http://${IP_ADDR}/queries/query=20 > ${RESULTS_LOG}-queries.log
+	sleep 2
+	${HYPERFOIL_DIR}/wrk.sh --latency --threads=${THREAD} --connections=${CONNECTIONS} --duration=${DURATION}s http://${IP_ADDR}/plaintext > ${RESULTS_LOG}-plaintext.log
+        sleep 2
 }
 
 # Run the wrk load on each instace of the application
@@ -386,7 +395,7 @@ function run_wrk_with_scaling()
 	load_setup
 	for svc_api  in "${SVC_APIS[@]}"
 	do
-		RESULT_LOG=${RESULTS_DIR_L}/wrk-${svc_api}-${TYPE}-${RUN}.log
+		RESULT_LOG=${RESULTS_DIR_L}/wrk-${svc_api}-${TYPE}-${RUN}
 		if [[ ${CLUSTER_TYPE} == "minikube" ]]; then
 			minikube_ip=$(minikube ip)
 			TFB_PORT=$(kubectl -n ${NAMESPACE} get svc | grep ${APP_NAME} | tr -s " " | cut -d " " -f5 | cut -d ":" -f2 | cut -d "/" -f1)
@@ -478,8 +487,14 @@ function runIterations() {
 	done
 }
 
+ENDPOINTS=(db json fortunes plaintext queries)
+
 echo "INSTANCES ,  THROUGHPUT_RATE_3m , RESPONSE_TIME_RATE_3m , MAX_RESPONSE_TIME , RESPONSE_TIME_50p , RESPONSE_TIME_95p , RESPONSE_TIME_97p , RESPONSE_TIME_99p , RESPONSE_TIME_99.9p , RESPONSE_TIME_99.99p , RESPONSE_TIME_99.999p , RESPONSE_TIME_100p , CPU_USAGE , MEM_USAGE , CPU_MIN , CPU_MAX , MEM_MIN , MEM_MAX , THRPT_PROM_CI , RSPTIME_PROM_CI" > ${RESULTS_DIR_ROOT}/Metrics-prom.log
-echo ", THROUGHPUT_WRK , RESPONSETIME_WRK , RESPONSETIME_MAX_WRK , RESPONSETIME_STDEV_WRK , WEB_ERRORS , THRPT_WRK_CI , RSPTIME_WRK_CI" > ${RESULTS_DIR_ROOT}/Metrics-wrk.log
+for endpoint in "${ENDPOINTS[@]}"
+do
+echo ", ${endpoint}_THROUGHPUT_WRK , ${endpoint}_RESPONSETIME_WRK , ${endpoint}_RESPONSETIME_MAX_WRK , ${endpoint}_RESPONSETIME_STDEV_WRK , ${endpoint}_WEB_ERRORS , ${endpoint}_THRPT_WRK_CI , ${endpoint}_RSPTIME_WRK_CI" > ${RESULTS_DIR_ROOT}/Metrics-${endpoint}-wrk.log
+done
+
 echo ", CPU_REQ , MEM_REQ , CPU_LIM , MEM_LIM , QRKS_TP_CORETHREADS , QRKS_TP_QUEUESIZE , QRKS_DS_JDBC_MINSIZE , QRKS_DS_JDBC_MAXSIZE , FreqInlineSize , MaxInlineLevel , MinInliningThreshold , CompileThreshold , CompileThresholdScaling , ConcGCThreads , InlineSmallCode , LoopUnrollLimit , LoopUnrollMin  , MinSurvivorRatio , NewRatio , TieredStopAtLevel , TieredCompilation , AllowParallelDefineClass , AllowVectorizeOnDemand , AlwaysCompileLoopMethods , AlwaysPreTouch , AlwaysTenure , BackgroundCompilation , DoEscapeAnalysis , UseInlineCaches , UseLoopPredicate , UseStringDeduplication , UseSuperWord , UseTypeSpeculation" > ${RESULTS_DIR_ROOT}/Metrics-config.log
 echo ", DEPLOYMENT_NAME , NAMESPACE , IMAGE_NAME , CONTAINER_NAME" > ${RESULTS_DIR_ROOT}/deploy-config.log
 
@@ -527,8 +542,7 @@ done
 sleep 10
 echo " "
 # Display the Metrics log file
-paste ${RESULTS_DIR_ROOT}/Metrics-prom.log ${RESULTS_DIR_ROOT}/Metrics-wrk.log ${RESULTS_DIR_ROOT}/Metrics-config.log ${RESULTS_DIR_ROOT}/deploy-config.log
+paste ${RESULTS_DIR_ROOT}/Metrics-prom.log ${RESULTS_DIR_ROOT}/Metrics-db-wrk.log ${RESULTS_DIR_ROOT}/Metrics-json-wrk.log ${RESULTS_DIR_ROOT}/Metrics-fortunes-wrk.log ${RESULTS_DIR_ROOT}/Metrics-plaintext-wrk.log ${RESULTS_DIR_ROOT}/Metrics-queries-wrk.log ${RESULTS_DIR_ROOT}/Metrics-config.log ${RESULTS_DIR_ROOT}/deploy-config.log
 #paste ${RESULTS_DIR_ROOT}/Metrics-quantiles-prom.log
 
-paste ${RESULTS_DIR_ROOT}/Metrics-prom.log ${RESULTS_DIR_ROOT}/Metrics-wrk.log ${RESULTS_DIR_ROOT}/deploy-config.log > ${RESULTS_DIR_ROOT}/output.csv
-
+paste ${RESULTS_DIR_ROOT}/Metrics-prom.log ${RESULTS_DIR_ROOT}/Metrics-db-wrk.log ${RESULTS_DIR_ROOT}/deploy-config.log > ${RESULTS_DIR_ROOT}/output.csv
