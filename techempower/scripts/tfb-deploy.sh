@@ -184,6 +184,18 @@ do
                         UseTypeSpeculation=*)
                                 UseTypeSpeculation=${OPTARG#*=}
                                 ;;
+			gcpolicy=*)
+                                gcpolicy=${OPTARG#*=}
+                                ;;
+                        StackTraceInThrowable=*)
+                                StackTraceInThrowable=${OPTARG#*=}
+                                ;;
+                        checkBounds=*)
+                                checkBounds=${OPTARG#*=}
+                                ;;
+                        httpiothreads=*)
+                                httpiothreads=${OPTARG#*=}
+                                ;;
 			*)
 		esac
 		;;
@@ -265,17 +277,24 @@ function createInstances() {
 			sed -i '/limits:/a \ \ \ \ \ \ \ \ \ \ cpu: '${CPU_LIM}'' ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
 		fi
 
-		tunables_jvm_boolean=(TieredCompilation AllowParallelDefineClass AllowVectorizeOnDemand AlwaysCompileLoopMethods AlwaysPreTouch AlwaysTenure BackgroundCompilation DoEscapeAnalysis UseInlineCaches UseLoopPredicate UseStringDeduplication UseSuperWord UseTypeSpeculation)
+		tunables_jvm_boolean=(TieredCompilation AllowParallelDefineClass AllowVectorizeOnDemand AlwaysCompileLoopMethods AlwaysPreTouch AlwaysTenure BackgroundCompilation DoEscapeAnalysis UseInlineCaches UseLoopPredicate UseStringDeduplication UseSuperWord UseTypeSpeculation StackTraceInThrowable)
 		tunables_jvm_values=(FreqInlineSize MaxInlineLevel MinInliningThreshold CompileThreshold CompileThresholdScaling ConcGCThreads InlineSmallCode LoopUnrollLimit LoopUnrollMin MinSurvivorRatio NewRatio TieredStopAtLevel)
-		tunables_quarkus=(quarkustpcorethreads quarkustpqueuesize quarkusdatasourcejdbcminsize quarkusdatasourcejdbcmaxsize)
+		tunables_quarkus=(quarkustpcorethreads quarkustpqueuesize quarkusdatasourcejdbcminsize quarkusdatasourcejdbcmaxsize httpiothreads)
+		tunables_system=(checkBounds)
 
 		user_options=$(echo ${OPTIONS_VAR} | tr ";" "\n")
 
-		OPTIONS_VAR=""
+#		OPTIONS_VAR=""
+		OPTIONS_VAR="-server -XX:MaxRAMPercentage=70"
 		for useroption in ${user_options}
 		do
 			OPTIONS_VAR="${OPTIONS_VAR} ${useroption}"
 		done
+
+		## Specific to GC policy
+		if [[ ! -z ${gcpolicy} ]]; then
+			OPTIONS_VAR="${OPTIONS_VAR} -XX:+${gcpolicy}"
+		fi
 
 		for btunable in "${tunables_jvm_boolean[@]}"
                 do
@@ -292,6 +311,10 @@ function createInstances() {
                 do
                         if [ ! -z ${!jvtunable} ]; then
 				OPTIONS_VAR="${OPTIONS_VAR} -XX:${jvtunable}=${!jvtunable}"
+				## Set ConGCThreads same as ParallelGCThreads to avoid errors
+				if [ ${jvtunable} == "ConcGCThreads" ]; then
+					OPTIONS_VAR="${OPTIONS_VAR} -XX:ParallelGCThreads=${!jvtunable}"
+				fi
                         fi
                 done
 		
@@ -303,13 +326,27 @@ function createInstances() {
 				elif [ ${qtunable} == "quarkustpqueuesize" ]; then
                                         OPTIONS_VAR="${OPTIONS_VAR} -Dquarkus.thread-pool.queue-size=${!qtunable}"
 				elif [ ${qtunable} == "quarkusdatasourcejdbcminsize" ]; then
-                                        OPTIONS_VAR="${OPTIONS_VAR} -Dquarkus.datasource.jdbc.min-size=${!qtunable}"
+                                        OPTIONS_VAR="${OPTIONS_VAR} -Dquarkus.datasource.jdbc.min-size=${!qtunable} -Dquarkus.datasource.jdbc.initial-size=${!qtunable}"
 				elif [ ${qtunable} == "quarkusdatasourcejdbcmaxsize" ]; then
                                         OPTIONS_VAR="${OPTIONS_VAR} -Dquarkus.datasource.jdbc.max-size=${!qtunable}"
+				elif [ ${qtunable} == "httpiothreads" ]; then
+					if [ ${!qtunable} == "true" ]; then
+                                        	OPTIONS_VAR="${OPTIONS_VAR} -Dquarkus.http.io-threads=${CPU_REQ%.*}"
+					fi
 				fi
                         fi
 
                 done
+
+		for systunable in "${tunables_system[@]}"
+		do
+			if [ ! -z ${!systunable} ]; then
+				if [ ${systunable} == "checkBounds" ]; then
+					OPTIONS_VAR="${OPTIONS_VAR} -Dio.netty.buffer.checkBounds=${!systunable} -Dio.netty.buffer.checkAccessible=${!systunable}"
+				fi
+			fi
+		done
+
 		if [ ! -z  "${OPTIONS_VAR}" ]; then
 			sed -i "s/\"-server\"/\"${OPTIONS_VAR}\"/" ${MANIFESTS_DIR}/quarkus-resteasy-hibernate-${inst}.yaml
 		fi
@@ -337,7 +374,7 @@ function createInstances() {
 	done
 
 	#Wait till ${APP_NAME} starts
-	sleep 20
+	sleep 15
 
 	#Expose the services
 	if [[ ${CLUSTER_TYPE} == "openshift" ]]; then
@@ -350,7 +387,7 @@ function createInstances() {
 	fi
 
 	## extra sleep time
-	sleep 60
+	sleep 20
 			
 	# Check if the application is running
 	#check_app >> ${LOGFILE}
@@ -359,7 +396,7 @@ function createInstances() {
 # Delete the tfb-qrh and tfb-database deployments,services and routes if it is already present 
 function stopAllInstances() {
 	${TFB_REPO}/tfb-cleanup.sh -c ${CLUSTER_TYPE} -n ${NAMESPACE} >> ${LOGFILE}
-	sleep 30
+	sleep 15
 
 	##extra sleep time
 #	sleep 60
