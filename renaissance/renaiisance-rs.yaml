@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: renaissancea-sample-0
+  labels:
+    app: renaissancea-app-0
+spec:
+  replicas: 3
+  selector:
+   matchLabels:
+     app: renaissancea-deployment
+  template:
+    metadata:
+      labels:
+        name: renaissancea-deployment
+        app: renaissancea-deployment
+        # Add label to the application which is used by kruize/autotune to monitor it
+        app.kubernetes.io/name: "renaissancea-deployment"
+        app.kubernetes.io/layer: "hotspot"
+        version: v1
+    spec:
+      volumes:
+      - name: test-volume
+      containers:
+      - name: renaissance-server
+        image: kusumach/renaissance:0.14.1_j11
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: "TIME_LIMIT"
+            value: "7200"
+          - name: "BENCHMARKS"
+            value: "all"
+        ports:
+          - containerPort: 8080
+        resources:
+         requests:
+          cpu: 4
+          memory: 4096M
+         limits:
+        volumeMounts:
+          - name: "test-volume"
+            mountPath: "/opt/jLogs"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: renaissancea-service-0
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/path: '/metrics'
+  labels:
+    app: renaissancea-app-0
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: renaissancea-port-0
+  selector:
+    name: renaissancea-deployment

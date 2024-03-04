@@ -1,0 +1,2 @@
+, CPU_REQ , MEM_REQ , CPU_LIM , MEM_LIM 
+, 4 , 4096M , 4 , 4096M 

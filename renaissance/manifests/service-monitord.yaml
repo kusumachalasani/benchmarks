@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: renaissanced
+  labels:
+    team: renaissanced-frontend
+spec:
+  selector:
+    matchLabels:
+        app: renaissanced-app
+  endpoints:
+    - port: renaissanced-port
+      path: '/metrics'

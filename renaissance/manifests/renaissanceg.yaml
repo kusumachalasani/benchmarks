@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: renaissanceG-sample
+  labels:
+    app: renaissanceG-app
+spec:
+  replicas: 3
+  selector:
+   matchLabels:
+     app: renaissanceG-deployment
+  template:
+    metadata:
+      labels:
+        name: renaissanceG-deployment
+        app: renaissanceG-deployment
+        # Add label to the application which is used by kruize/autotune to monitor it
+        app.kubernetes.io/name: "renaissanceG-deployment"
+        app.kubernetes.io/layer: "hotspot"
+        version: v1
+    spec:
+      volumes:
+      - name: test-volume
+      containers:
+      - name: renaissance-server
+        image: prakalp23/renaissance1041:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        ports:
+          - containerPort: 8080
+        resources:
+         requests:
+         limits:
+        volumeMounts:
+          - name: "test-volume"
+            mountPath: "/opt/jLogs"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: renaissanceG-service
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/path: '/metrics'
+  labels:
+    app: renaissanceG-app
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: renaissanceG-port
+  selector:
+    name: renaissanceG-deployment
