@@ -6,6 +6,8 @@ metadata:
   annotations:
     prometheus.io/scrape: 'true'
     prometheus.io/path: '/manage/prometheus'
+  labels:
+    app: petclinic-app
 spec:
   type: NodePort
   ports:
@@ -21,6 +23,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: petclinic-sample
+  labels:
+    app: petclinic-app
 spec:
   replicas: 1
   selector:
@@ -29,6 +33,7 @@ spec:
   template:
     metadata:
       labels:
+        name: petclinic-deployment
         app: petclinic-deployment
         app.kubernetes.io/name: "petclinic-deployment"
         version: v1
