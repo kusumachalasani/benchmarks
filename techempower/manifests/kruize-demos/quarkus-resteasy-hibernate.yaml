@@ -21,6 +21,7 @@ spec:
     spec:
       volumes:
       - name: test-volume
+        emptyDir: {}
       containers:
       - name: tfb-server
         image: quay.io/kruizehub/tfb-qrh:1.13.2.F_et17
