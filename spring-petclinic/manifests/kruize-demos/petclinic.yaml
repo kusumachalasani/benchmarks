@@ -1,0 +1,98 @@
+# 1. PetClinic Service: Fixed port 8081 and matching selectors
+apiVersion: v1
+kind: Service
+metadata:
+  name: petclinic-service
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/path: '/manage/prometheus'
+  labels:
+    app: petclinic-app
+spec:
+  type: NodePort
+  ports:
+    - port: 8081
+      targetPort: 8081
+      nodePort: 32334
+      name: petclinic-port
+  selector:
+    app: petclinic-deployment
+---
+# 2. PetClinic Deployment: Updated with your specific image and labels
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: petclinic-sample
+  labels:
+    app: petclinic-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: petclinic-deployment
+  template:
+    metadata:
+      labels:
+        name: petclinic-deployment
+        app: petclinic-deployment
+        app.kubernetes.io/name: "petclinic-deployment"
+        version: v1
+    spec:
+      containers:
+      - name: petclinic-tomcat
+        image: quay.io/kruizehub/spring_petclinic:2.2.0-jdk-11.0.8-openj9-0.21.0
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 8081
+        volumeMounts:
+          - name: "test-volume"
+            mountPath: "/opt/jLogs"
+        # Readiness probe ensures the Load Job waits for the actual JVM to start
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8081
+          initialDelaySeconds: 20
+          periodSeconds: 10
+      volumes:
+      - name: test-volume
+        emptyDir: {}
+---
+# 3. JMeter Load Job: Coordinated to start only when Service is ready
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: petclinic-load-generator
+spec:
+  template:
+    spec:
+      # Wait logic ensures JMeter doesn't fire into a void while Tomcat is booting
+      initContainers:
+      - name: wait-for-petclinic
+        image: busybox:1.28
+        command: ['sh', '-c', "until nc -z petclinic-service 8081; do echo 'Waiting for PetClinic...'; sleep 2; done;"]
+      containers:
+      - name: petclinic-load
+        image: quay.io/kruizehub/spring_petclinic_load:jmeter_3.3
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            cd /jmeter/apache-jmeter-${JMETER_VERSION}
+
+            # STAGE 1: Low Load (50 Users)
+            echo "Starting Stage 1: 50 Users..."
+            ./bin/jmeter -n -t petclinic.jmx -Jduration=900 -Jusers=50 \
+            -JPETCLINIC_HOST=petclinic-service -JPETCLINIC_PORT=8081
+
+            # STAGE 2: Medium Load (100 Users)
+            echo "Starting Stage 2: 100 Users..."
+            ./bin/jmeter -n -t petclinic.jmx -Jduration=600 -Jusers=100 \
+            -JPETCLINIC_HOST=petclinic-service -JPETCLINIC_PORT=8081
+
+            # STAGE 3: Peak Load (150 Users)
+            echo "Starting Stage 3: 150 Users..."
+            ./bin/jmeter -n -t petclinic.jmx -Jduration=300 -Jusers=150 \
+            -JPETCLINIC_HOST=petclinic-service -JPETCLINIC_PORT=8081
+      restartPolicy: Never
+  backoffLimit: 2
+

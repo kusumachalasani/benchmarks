@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tfb-qrh-sample
+  labels:
+    app: tfb-qrh-app
+spec:
+  replicas: 1
+  selector:
+   matchLabels:
+     app: tfb-qrh-deployment
+  template:
+    metadata:
+      labels:
+        name: tfb-qrh-deployment
+        app: tfb-qrh-deployment
+        # Add label to the application which is used by kruize/autotune to monitor it
+        app.kubernetes.io/name: "tfb-qrh-deployment"
+        app.kubernetes.io/layer: "quarkus"
+        version: v1
+    spec:
+      volumes:
+      - name: test-volume
+        emptyDir: {}
+      containers:
+      - name: tfb-server
+        image: quay.io/kruizehub/tfb-qrh:1.13.2.F_et17
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: "JAVA_OPTIONS"
+            value: "-server"
+        ports:
+          - containerPort: 8080
+        resources:
+         requests:
+           cpu: 1.5
+           memory: "512Mi"
+         limits:
+           cpu: 3.5
+           memory: "2048Mi"
+        volumeMounts:
+          - name: "test-volume"
+            mountPath: "/opt/jLogs"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tfb-qrh-load-generator
+spec:
+  template:
+    spec:
+      terminationGracePeriodSeconds: 0
+      # Wait for Quarkus to be ready before starting the load
+      initContainers:
+      - name: wait-for-tfb
+        image: busybox:1.28
+        command: ['sh', '-c']
+        args:
+          - |
+            echo "Waiting for TFB (/plaintext) to be ready..."
+            for i in $(seq 1 120); do
+              if wget -qO- http://tfb-qrh-service:8080/plaintext > /dev/null; then
+                echo "TFB is ready!"
+                exit 0
+              fi
+              echo "Waiting for app... ($i/120)"
+              sleep 1
+            done
+            echo "ERROR: TFB did not respond in 2 minutes."
+            exit 1
+      containers:
+      - name: tfb-qrh-load
+        image: quay.io/kruizehub/tfb_hyperfoil_load:0.25.2
+        env:
+        - name: TARGET
+          value: "tfb-qrh-service:8080"
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "Starting 30-minute Multi-Endpoint Benchmark..."
+
+            # --- PHASE 1: Combined Ramp-up (5 mins) ---
+            for conn in 50 150 300; do
+              echo "Ramping up: ${conn} connections..."
+              /opt/run_hyperfoil_load.sh $TARGET "plaintext" 30 12 $conn
+              /opt/run_hyperfoil_load.sh $TARGET "db" 30 12 $conn
+              /opt/run_hyperfoil_load.sh $TARGET "queries?queries=20" 40 12 $conn
+            done
+
+            # --- PHASE 2: Plaintext (CPU focus - 8 mins) ---
+            echo "Phase 2: High Throughput (Plaintext)..."
+            /opt/run_hyperfoil_load.sh $TARGET "plaintext" 480 12 400
+
+            # --- PHASE 3: DB Query (Pool focus - 8 mins) ---
+            echo "Phase 3: DB Driver & Connection Pool..."
+            /opt/run_hyperfoil_load.sh $TARGET "db" 480 12 400
+
+            # --- PHASE 4: Hibernate (Memory focus - 9 mins) ---
+            echo "Phase 4: Complex ORM & Memory Allocation..."
+            /opt/run_hyperfoil_load.sh $TARGET "queries?queries=20" 540 12 500
+
+            echo "Full benchmark complete. Entering 2-minute cooldown..."
+            sleep 120
+      restartPolicy: Never
+  backoffLimit: 1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tfb-qrh-service
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/path: '/q/metrics'
+  labels:
+    app: tfb-qrh-app
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: tfb-qrh-port
+  selector:
+    name: tfb-qrh-deployment
