@@ -16,7 +16,7 @@ spec:
         app: tfb-qrh-deployment
         # Add label to the application which is used by kruize/autotune to monitor it
         app.kubernetes.io/name: "tfb-qrh-deployment"
-        app.kubernetes.io/layer: "quarkus"
+        com.redhat.component-name: "Quarkus"
         version: v1
     spec:
       volumes:
